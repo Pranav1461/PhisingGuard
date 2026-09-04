@@ -1,0 +1,11 @@
+backend/
+ml/
+tests/
+*.py
+*.pyc
+__pycache__/
+.pytest_cache/
+requirements.txt
+alembic.ini
+alembic/
+phishguard.db
