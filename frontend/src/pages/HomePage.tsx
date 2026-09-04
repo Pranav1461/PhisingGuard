@@ -123,12 +123,12 @@ export const HomePage: React.FC = () => {
 
           {/* Actions */}
           <div className="mt-7 flex flex-col sm:flex-row gap-2.5 sm:gap-3 appear appear--btn" style={{ '--d': '0.96s' } as React.CSSProperties}>
-            <Link to="/check" className="btn btn-solid btn-hero-solid h-[42px] sm:h-[44px] md:h-[46px] px-[18px] sm:px-[20px] md:px-[24px] text-[13.5px] sm:text-[14px] w-full sm:w-auto">
-              <Search className="w-4 h-4 mr-2" />
+            <Link to="/check" className="btn btn-solid btn-hero-solid h-[38px] sm:h-[42px] md:h-[46px] px-[14px] sm:px-[18px] md:px-[24px] text-[12.5px] sm:text-[13.5px] md:text-[14px] w-full sm:w-auto">
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Check a Website
             </Link>
-            <Link to="/learn" className="btn btn-ghost h-[42px] sm:h-[44px] md:h-[46px] px-[18px] sm:px-[20px] md:px-[24px] text-[13.5px] sm:text-[14px] w-full sm:w-auto appear appear--side" style={{ '--d': '1.10s' } as React.CSSProperties}>
-              <BookOpen className="w-4 h-4 mr-2 opacity-60" />
+            <Link to="/learn" className="btn btn-ghost h-[38px] sm:h-[42px] md:h-[46px] px-[14px] sm:px-[18px] md:px-[24px] text-[12.5px] sm:text-[13.5px] md:text-[14px] w-full sm:w-auto appear appear--side" style={{ '--d': '1.10s' } as React.CSSProperties}>
+              <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 opacity-60" />
               Learn How Phishing Works
             </Link>
           </div>

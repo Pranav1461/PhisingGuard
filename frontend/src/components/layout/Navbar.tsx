@@ -109,14 +109,14 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={toggleMenu}
-              className="md:hidden relative z-[60] w-[42px] h-[42px] flex flex-col items-center justify-center gap-[5px] rounded-md border border-white/16 bg-white/5 hover:border-white/32 hover:bg-white/5 transition-colors"
+              className="md:hidden relative z-[60] w-[44px] h-[44px] flex flex-col items-center justify-center gap-[5.5px] rounded-lg border border-white/20 bg-white/10 hover:border-white/40 hover:bg-white/15 transition-colors p-2.5"
               aria-controls="site-nav"
               aria-expanded={menuOpen}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             >
-              <span className={`block w-4 h-[1.5px] bg-white rounded-[1px] transition-all duration-[250ms] ${menuOpen ? 'translate-y-[6.5px] rotate-45' : ''}`} />
-              <span className={`block w-4 h-[1.5px] bg-white rounded-[1px] transition-all duration-[200ms] ${menuOpen ? 'opacity-0' : ''}`} />
-              <span className={`block w-4 h-[1.5px] bg-white rounded-[1px] transition-all duration-[250ms] ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`} />
+              <span className={`block w-[22px] h-[2px] bg-white rounded-[1px] transition-all duration-[250ms] ${menuOpen ? 'translate-y-[7.5px] rotate-45' : ''}`} />
+              <span className={`block w-[22px] h-[2px] bg-white rounded-[1px] transition-all duration-[200ms] ${menuOpen ? 'opacity-0' : ''}`} />
+              <span className={`block w-[22px] h-[2px] bg-white rounded-[1px] transition-all duration-[250ms] ${menuOpen ? '-translate-y-[7.5px] -rotate-45' : ''}`} />
             </button>
           </div>
         </div>

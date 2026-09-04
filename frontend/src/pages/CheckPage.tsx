@@ -122,9 +122,9 @@ export const CheckPage: React.FC = () => {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="btn btn-solid h-[42px] px-5 text-sm w-full sm:w-auto"
+            className="btn btn-solid h-[38px] sm:h-[42px] px-4 sm:px-5 text-[13px] sm:text-sm w-full sm:w-auto shrink-0"
           >
-            {status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" /> : <Search className="w-4 h-4 mr-2" aria-hidden="true" />}
+            {status === 'loading' ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-1.5 sm:mr-2" aria-hidden="true" /> : <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" aria-hidden="true" />}
             Analyze URL
           </button>
         </div>
