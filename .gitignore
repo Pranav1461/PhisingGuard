@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Build output
+frontend/dist/
+frontend/dist-ssr/
+*.egg-info/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# IDE / editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Claude / tools (machine-specific)
+.claude/
+.agents/
+.playwright-mcp/
+skills-lock.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Testing / cache
+.pytest_cache/
+.coverage
+htmlcov/
+frontend/test-results/
+frontend/playwright-report/
+
+# Local SQLite database (dev fallback)
+*.db
+*.db3
+*.sqlite
+*.sqlite3
+
+# ML generated training data (model artifacts are kept)
+ml/data/dataset.csv
+
+# OS
+.DS_Store
+Thumbs.db
