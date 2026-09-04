@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     URLSCAN_API_KEY: str = ""
     URLHAUS_AUTH_KEY: str = ""
 
-    # Database
+    # Database (defaults to local SQLite)
     DATABASE_URL: str = "sqlite:///./phishguard.db"
 
     # CORS

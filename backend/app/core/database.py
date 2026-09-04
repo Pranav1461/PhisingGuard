@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 def _make_engine(url: str):
     """Create a SQLAlchemy engine for the given URL."""
+    if not url or not url.strip():
+        url = "sqlite:///./phishguard.db"
     create_kwargs = {}
     if url.startswith("sqlite"):
         create_kwargs["connect_args"] = {"check_same_thread": False}
@@ -29,18 +31,27 @@ def _engine_is_reachable(engine) -> bool:
         return False
 
 
-_primary_engine = _make_engine(settings.DATABASE_URL)
-
-if _engine_is_reachable(_primary_engine):
-    engine = _primary_engine
-    logger.info(f"Using configured database: {settings.DATABASE_URL.split('@')[-1]}")
+_db_url = settings.DATABASE_URL.strip() if settings.DATABASE_URL else ""
+if _db_url:
+    try:
+        _primary_engine = _make_engine(_db_url)
+        if _engine_is_reachable(_primary_engine):
+            engine = _primary_engine
+            logger.info(f"Using configured database: {_db_url.split('@')[-1]}")
+        else:
+            fallback_url = "sqlite:///./phishguard.db"
+            engine = _make_engine(fallback_url)
+            logger.warning(
+                f"Configured database unreachable — falling back to local SQLite: {fallback_url}."
+            )
+    except Exception as e:
+        fallback_url = "sqlite:///./phishguard.db"
+        engine = _make_engine(fallback_url)
+        logger.warning(f"Could not initialize configured database ({e}) — falling back to local SQLite: {fallback_url}.")
 else:
     fallback_url = "sqlite:///./phishguard.db"
     engine = _make_engine(fallback_url)
-    logger.warning(
-        f"Configured database unreachable — falling back to local SQLite: {fallback_url}. "
-        "Set DATABASE_URL to a valid PostgreSQL connection for production use."
-    )
+    logger.info(f"DATABASE_URL not set — using local SQLite: {fallback_url}")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

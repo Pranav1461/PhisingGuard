@@ -94,7 +94,7 @@ phishguard/
 ### Prerequisites
 - **Node.js** ≥ 20 and npm
 - **Python** ≥ 3.10 and pip
-- (Optional) A Supabase project — or use the bundled SQLite default
+- Built-in SQLite database (zero setup required)
 
 ### 1. Clone & install
 
@@ -124,8 +124,6 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
 ```
 
-> ⚠️ **Never commit real `.env` files or API keys.** The repo ships `.env.example` templates only. Keys stay server-side; they are never exposed to the React client.
-
 Get free API keys:
 - **VirusTotal**: https://www.virustotal.com (Public API — 500 req/day, 4 req/min)
 - **urlscan.io**: https://urlscan.io (Free plan)
@@ -134,7 +132,7 @@ Get free API keys:
 ### 3. Train the ML model (optional — a trained model is included)
 
 ```bash
-python ml/generate_dataset.py     # builds dataset.csv (10k samples)
+python ml/generate_dataset.py     # builds dataset.csv 
 # Then run the training notebook/script to export ml/models/phishing_model.joblib
 ```
 
