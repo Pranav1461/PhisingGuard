@@ -1,4 +1,4 @@
-﻿import socket
+import socket
 import ipaddress
 from urllib.parse import urlparse, urlunparse
 

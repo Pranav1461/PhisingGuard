@@ -1,4 +1,4 @@
-﻿import uuid
+import uuid
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, Depends, status
@@ -16,6 +16,7 @@ router = APIRouter(tags=["URL Analysis"])
 threat_intel_service = ThreatIntelligenceService()
 
 @router.post("/analyze-url", response_model=AnalyzeURLResponse)
+@router.post("/analyze", response_model=AnalyzeURLResponse)
 async def analyze_url(req: AnalyzeURLRequest, db: Session = Depends(get_db)):
     if not req.url or not req.url.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please provide a valid URL to analyze.")

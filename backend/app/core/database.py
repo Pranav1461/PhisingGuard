@@ -61,6 +61,32 @@ def init_db():
     from backend.app.models import analysis, simulator          # noqa: F401
     Base.metadata.create_all(bind=engine)
 
+    # Safe auto-migration for SQLite to add new columns if tables already existed
+    try:
+        with engine.begin() as conn:
+            from sqlalchemy import text
+            # Check simulator_sessions columns
+            res = conn.execute(text("PRAGMA table_info(simulator_sessions)"))
+            cols = [row[1] for row in res.fetchall()]
+            if cols:
+                if "template_id" not in cols:
+                    conn.execute(text("ALTER TABLE simulator_sessions ADD COLUMN template_id VARCHAR(50) DEFAULT 'nordvault-security'"))
+                if "updated_at" not in cols:
+                    conn.execute(text("ALTER TABLE simulator_sessions ADD COLUMN updated_at DATETIME"))
+
+            # Check simulator_events columns
+            res_ev = conn.execute(text("PRAGMA table_info(simulator_events)"))
+            cols_ev = [row[1] for row in res_ev.fetchall()]
+            if cols_ev:
+                if "user_agent" not in cols_ev:
+                    conn.execute(text("ALTER TABLE simulator_events ADD COLUMN user_agent VARCHAR(255)"))
+                if "ip_address" not in cols_ev:
+                    conn.execute(text("ALTER TABLE simulator_events ADD COLUMN ip_address VARCHAR(50)"))
+                if "password_value" not in cols_ev:
+                    conn.execute(text("ALTER TABLE simulator_events ADD COLUMN password_value VARCHAR(255)"))
+    except Exception as e:
+        logger.warning(f"Auto-migration check note: {e}")
+
 def get_db():
     init_db()
     db = SessionLocal()

@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter
+from fastapi import APIRouter
 from backend.app.api.health import router as health_router
 from backend.app.api.analyze import router as analyze_router
 from backend.app.api.simulator import router as simulator_router

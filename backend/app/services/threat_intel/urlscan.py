@@ -1,4 +1,4 @@
-﻿import httpx
+import httpx
 from typing import Dict, Any
 from backend.app.core.config import settings
 from backend.app.services.threat_intel.base import BaseThreatIntelProvider

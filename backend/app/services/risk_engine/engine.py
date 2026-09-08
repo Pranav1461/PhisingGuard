@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple
 
 class ExplainableRiskEngine:
     def calculate_risk(

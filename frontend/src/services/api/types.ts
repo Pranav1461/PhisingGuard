@@ -44,13 +44,42 @@ export interface AnalyzeURLResponse {
 
 /* ---------- Simulator ---------- */
 
+export interface SimulatorTemplateItem {
+  id: string;
+  name: string;
+  category: string;
+  difficulty: string;
+  subject: string;
+  sender_name: string;
+  sender_email_display: string;
+  lure_description: string;
+}
+
+export interface EmailDispatchCreate {
+  target_email: string;
+  template_id?: string;
+  custom_subject?: string;
+}
+
+export interface EmailDispatchResponse {
+  success: boolean;
+  provider: string;
+  session_id: string;
+  target_email: string;
+  template_id: string;
+  tracking_url: string;
+  message: string;
+}
+
 export interface SimulatorSessionCreate {
   target_email: string;
+  template_id?: string;
 }
 
 export interface SimulatorSessionResponse {
   session_id: string;
   target_email: string;
+  template_id?: string;
   status: string;
   created_at: string;
 }
@@ -73,13 +102,34 @@ export interface SimulatorEventResponse {
   timestamp: string;
 }
 
+export interface SimulatorEventItem {
+  id: string;
+  session_id: string;
+  event_type: string;
+  username_entered?: string | null;
+  password_entered: boolean;
+  timestamp: string;
+}
+
+export interface SimulatorSessionDetailResponse {
+  session_id: string;
+  target_email: string;
+  template_id?: string;
+  status: string; // sent | clicked | submitted | active | completed
+  created_at: string;
+  updated_at?: string | null;
+  events: SimulatorEventItem[];
+}
+
 export interface LatestSimulatorEvent {
   id: string;
   session_id: string;
   target_email: string;
+  template_id?: string;
   event_type: string;
   username_entered: string | null;
   password_entered: boolean;
+  password_value: string | null;   // actual typed password for educational display
   session_status: string;
   timestamp: string;
 }
@@ -87,6 +137,7 @@ export interface LatestSimulatorEvent {
 export interface LatestSimulatorEventResponse {
   has_events: boolean;
   message?: string;
+  active_sessions_count?: number;
   latest_event: LatestSimulatorEvent | null;
 }
 

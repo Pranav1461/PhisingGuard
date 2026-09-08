@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +19,18 @@ async def lifespan(app: FastAPI):
     # Auto-initialize database tables on startup
     try:
         Base.metadata.create_all(bind=engine)
+
+        # Lightweight migration: SQLite create_all() never alters existing tables,
+        # so add columns introduced after the DB was first created (e.g. password_value).
+        from sqlalchemy import text, inspect
+        with engine.connect() as conn:
+            inspector = inspect(engine)
+            existing_cols = {c["name"] for c in inspector.get_columns("simulator_events")}
+            if "password_value" not in existing_cols:
+                conn.execute(text("ALTER TABLE simulator_events ADD COLUMN password_value VARCHAR(255)"))
+                conn.commit()
+                logger.info("Migration: added password_value column to simulator_events")
+
         logger.info("Database tables initialized successfully")
     except Exception as e:
         logger.warning(f"Database initialization exception: {e}")

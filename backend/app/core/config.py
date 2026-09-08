@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,14 +14,38 @@ class Settings(BaseSettings):
     URLSCAN_API_KEY: str = ""
     URLHAUS_AUTH_KEY: str = ""
 
+    # Email Dispatcher & Phishing Simulator (Resend or SMTP)
+    RESEND_API_KEY: str = ""
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_USE_TLS: bool = True
+    SIMULATOR_SENDER_EMAIL: str = "PhishGuard Security <onboarding@resend.dev>"
+    SIMULATOR_FRONTEND_URL: str = "http://localhost:5174"
+
     # Database (defaults to local SQLite)
     DATABASE_URL: str = "sqlite:///./phishguard.db"
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "*"
 
     @property
     def cors_origins_list(self) -> List[str]:
+        if not self.CORS_ORIGINS or self.CORS_ORIGINS.strip() == "*":
+            return [
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:5175",
+                "http://localhost:5176",
+                "http://localhost:3000",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:5174",
+                "http://127.0.0.1:5175",
+                "http://127.0.0.1:5176",
+                "http://127.0.0.1:3000",
+                "https://phising-guard-beta.vercel.app"
+            ]
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
     def validate_required_keys(self) -> List[str]:

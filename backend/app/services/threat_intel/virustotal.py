@@ -1,4 +1,4 @@
-﻿import base64
+import base64
 import httpx
 from typing import Dict, Any
 from backend.app.core.config import settings
