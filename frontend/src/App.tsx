@@ -7,6 +7,7 @@ import { CheckPage } from './pages/CheckPage';
 import { LearnPage } from './pages/LearnPage';
 import { PatternPage } from './pages/PatternPage';
 import { SimulatorPage } from './pages/SimulatorPage';
+import { FraudDetectionPage } from './pages/FraudDetectionPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 /* Smooth page transition wrapper */
@@ -36,6 +37,7 @@ function AnimatedRoutes() {
           <Route path="learn" element={<PageTransition><LearnPage /></PageTransition>} />
           <Route path="patterns" element={<PageTransition><PatternPage /></PageTransition>} />
           <Route path="simulator" element={<PageTransition><SimulatorPage /></PageTransition>} />
+          <Route path="fraud-detection" element={<PageTransition><FraudDetectionPage /></PageTransition>} />
           <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
         </Route>
       </Routes>

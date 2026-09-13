@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Search, Cpu, PlayCircle, ShieldAlert } from 'lucide-react';
+import { Home, BookOpen, Search, Cpu, PlayCircle, ShieldAlert, BadgeAlert } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', path: '/', icon: Home },
@@ -8,6 +8,7 @@ const navItems = [
   { name: 'Learn', path: '/learn', icon: BookOpen },
   { name: 'Patterns', path: '/patterns', icon: Cpu },
   { name: 'Simulator', path: '/simulator', icon: PlayCircle },
+  { name: 'Fraud', path: '/fraud-detection', icon: BadgeAlert },
 ];
 
 export const Navbar: React.FC = () => {
