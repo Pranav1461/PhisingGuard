@@ -4,11 +4,11 @@ import { Home, BookOpen, Search, Cpu, PlayCircle, ShieldAlert, BadgeAlert } from
 
 const navItems = [
   { name: 'Home', path: '/', icon: Home },
-  { name: 'Check Website', path: '/check', icon: Search },
   { name: 'Learn', path: '/learn', icon: BookOpen },
-  { name: 'Patterns', path: '/patterns', icon: Cpu },
-  { name: 'Simulator', path: '/simulator', icon: PlayCircle },
   { name: 'Fraud', path: '/fraud-detection', icon: BadgeAlert },
+  { name: 'Patterns', path: '/patterns', icon: Cpu },
+  { name: 'Check', path: '/check', icon: Search },
+  { name: 'Simulator', path: '/simulator', icon: PlayCircle },
 ];
 
 export const Navbar: React.FC = () => {
