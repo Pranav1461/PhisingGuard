@@ -16,7 +16,7 @@ def test_simulator_templates_endpoint():
 def test_simulator_email_dispatch_and_history():
     # 1. Dispatch Email (Simulated or Resend)
     dispatch_payload = {
-        "target_email": "student.test@example.com",
+        "target_email": "audit.test@example.com",
         "template_id": "nordvault-security"
     }
     dispatch_res = client.post("/api/simulator/send-email", json=dispatch_payload)
@@ -31,7 +31,7 @@ def test_simulator_email_dispatch_and_history():
     click_payload = {
         "session_id": session_id,
         "event_type": "link_clicked",
-        "username_entered": "student.test@example.com",
+        "username_entered": "audit.test@example.com",
         "password_entered": False
     }
     click_res = client.post("/api/simulator/events", json=click_payload)
@@ -49,7 +49,7 @@ def test_simulator_email_dispatch_and_history():
     submit_payload = {
         "session_id": session_id,
         "event_type": "login_submitted",
-        "username_entered": "student.test@example.com",
+        "username_entered": "audit.test@example.com",
         "password_entered": True,
         "password_value": "dummyPassword123"
     }

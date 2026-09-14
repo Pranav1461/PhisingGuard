@@ -38,7 +38,7 @@ class EmailDispatcher:
         custom_subject: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Dispatches an educational phishing email to the target address.
+        Dispatches a phishing simulation email to the target address.
         Attempts Resend API first, then SMTP if configured, else returns diagnostic simulated state.
         """
         template = get_template(template_id)
@@ -114,7 +114,7 @@ class EmailDispatcher:
             "text": text_content,
             "headers": {
                 "X-Entity-Ref-ID": f"phishguard-sim-{to_email}",
-                "X-PhishGuard-Educational": "true"
+                "X-PhishGuard-Simulation": "true"
             }
         }
 
@@ -148,7 +148,7 @@ class EmailDispatcher:
         msg["Subject"] = subject
         msg["From"] = self.sender_email
         msg["To"] = to_email
-        msg.add_header("X-PhishGuard-Educational", "true")
+        msg.add_header("X-PhishGuard-Simulation", "true")
 
         part1 = MIMEText(text_content, "plain")
         part2 = MIMEText(html_content, "html")

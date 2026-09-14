@@ -486,7 +486,7 @@ export const FraudDetectionPage: React.FC = () => {
         <div className="flex items-start gap-3">
           <Shield className="w-4 h-4 text-white/30 mt-0.5 shrink-0" />
           <p className="text-sm text-white/35 leading-relaxed">
-            This page is educational. It does not detect fraud on your behalf. For active threat checking,
+            This guide provides reference security patterns. It does not detect fraud on your behalf. For active threat checking,
             use the <Link to="/check" className="text-white/55 underline underline-offset-2 hover:text-white transition-colors">URL checker</Link> or
             the <Link to="/simulator" className="text-white/55 underline underline-offset-2 hover:text-white transition-colors">phishing simulator</Link>.
           </p>
@@ -496,12 +496,12 @@ export const FraudDetectionPage: React.FC = () => {
       {/* ── CTA ── */}
       <section className="scroll-reveal text-center pb-8" data-delay="0">
         <p className="text-sm text-white/40 mb-5">
-          Ready to put this into practice? Try the phishing education or check a suspicious URL.
+          Ready to put this into practice? Explore threat patterns or check a suspicious URL.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/learn" className="btn btn-solid h-[42px] px-5 text-sm">
             <Shield className="w-4 h-4 mr-2" />
-            Phishing Education
+            Security Awareness
           </Link>
           <Link to="/check" className="btn btn-ghost h-[42px] px-5 text-sm">
             <Search className="w-4 h-4 mr-2 opacity-60" />

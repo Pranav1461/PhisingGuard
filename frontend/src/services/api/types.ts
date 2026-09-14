@@ -89,7 +89,7 @@ export interface SimulatorEventCreate {
   event_type: string;
   username_entered?: string | null;
   password_entered: boolean;
-  password_value?: string | null;  // The actual typed password — returned for educational display, never persisted.
+  password_value?: string | null;  // The actual typed password — returned for telemetry display, never persisted.
 }
 
 export interface SimulatorEventResponse {
@@ -129,7 +129,7 @@ export interface LatestSimulatorEvent {
   event_type: string;
   username_entered: string | null;
   password_entered: boolean;
-  password_value: string | null;   // actual typed password for educational display
+  password_value: string | null;   // actual typed password for telemetry display
   session_status: string;
   timestamp: string;
 }

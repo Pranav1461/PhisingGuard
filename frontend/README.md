@@ -8,9 +8,9 @@ The React + TypeScript + Vite client for PhishGuard.
 | --- | --- | --- |
 | `/` | Home | Landing, "what is phishing", how phishing works flow, feature overview |
 | `/check` | Check Website | The primary URL checker — full loading / result / error states |
-| `/learn` | Learn | Phishing education |
+| `/learn` | Learn | Security awareness & defense patterns |
 | `/patterns` | Pattern Learning | URL anatomy + recurring phishing characteristics |
-| `/simulator` | Simulator | Controlled educational phishing simulator + monitoring dashboard |
+| `/simulator` | Simulator | Phishing simulation campaign engine + live monitoring dashboard |
 
 ## Layout
 

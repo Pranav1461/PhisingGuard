@@ -8,7 +8,7 @@ import {
   Activity,
   ShieldAlert,
   KeyRound,
-  GraduationCap,
+  Sliders,
   CheckCircle2,
   Clock,
   Copy,
@@ -206,7 +206,7 @@ export const SimulatorPage: React.FC = () => {
     setRefreshingMonitor(false);
   };
 
-  // Dispatch real educational phishing email
+  // Dispatch real phishing simulation email
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dispatchEmail.trim() || !dispatchEmail.includes('@')) {
@@ -227,7 +227,7 @@ export const SimulatorPage: React.FC = () => {
       // Refresh monitor data so the new session is tracked immediately
       fetchMonitorData();
     } catch (err: any) {
-      setDispatchError(err.message || 'Failed to dispatch educational phishing email.');
+      setDispatchError(err.message || 'Failed to dispatch phishing simulation email.');
     }
     setDispatching(false);
   };
@@ -259,7 +259,7 @@ export const SimulatorPage: React.FC = () => {
     setSubmittingLogin(true);
     setTargetError(null);
 
-    // Save what was typed strictly in browser memory for educational reveal
+    // Save what was typed in session state for debrief reveal
     setCapturedData({ username, password });
 
     try {
@@ -277,7 +277,7 @@ export const SimulatorPage: React.FC = () => {
         event_type: 'login_submitted',
         username_entered: username,
         password_entered: password.length > 0,
-        password_value: password // Transmitted back solely for educational feedback
+        password_value: password // Transmitted back for analysis debrief
       });
     } catch (err: any) {
       setTargetError(err.message || 'Notice: Interaction recorded in local session.');
@@ -293,16 +293,16 @@ export const SimulatorPage: React.FC = () => {
   if (isTargetMode) {
     return (
       <div className="max-w-2xl mx-auto py-4">
-        {/* Educational Awareness Banner */}
+        {/* Security Simulation Notice Banner */}
         <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 flex items-center justify-between text-xs text-amber-200">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 shrink-0 text-amber-400" />
             <span>
-              <strong>PhishGuard Educational Simulation</strong> &bull; Tracking ID: <code className="font-mono text-white/80">{paramSessionId}</code>
+              <strong>PhishGuard Security Simulation</strong> &bull; Tracking ID: <code className="font-mono text-white/80">{paramSessionId}</code>
             </span>
           </div>
           <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-amber-500/20 text-[11px] font-medium text-amber-300">
-            Training Demonstration
+            Controlled Assessment
           </span>
         </div>
 
@@ -401,8 +401,8 @@ export const SimulatorPage: React.FC = () => {
                 </form>
 
                 <p className="mt-5 text-center text-[11px] text-white/30 leading-relaxed">
-                  🛡️ This is a simulated login form for security training.
-                  Do not enter real passwords.
+                  🛡️ This is a simulated login form for security assessment.
+                  Do not enter production passwords.
                 </p>
               </div>
             </div>
@@ -416,27 +416,27 @@ export const SimulatorPage: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4 border border-red-500/30">
                 <ShieldAlert className="w-8 h-8 text-red-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white">You fell for the simulation!</h2>
+              <h2 className="text-2xl font-bold text-white">Simulation Compromise Detected</h2>
               <p className="mt-2 text-sm text-white/60 max-w-lg mx-auto leading-relaxed">
-                If this had been a real cyber attack, the attacker would have immediately stolen your login credentials
-                and gained full unauthorized access to your account.
+                In a real-world credential harvesting campaign, an attacker would have intercepted
+                these credentials to bypass authentication and compromise your infrastructure.
               </p>
 
               {/* What the attacker captured */}
               <div className="mt-6 rounded-lg border border-white/10 bg-black/60 p-5 max-w-md mx-auto text-left shadow-inner">
                 <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-red-400" />
-                  What the attacker captured in plain text:
+                  Captured Payload (Plain Text):
                 </p>
                 <div className="space-y-2.5">
                   <div>
-                    <span className="text-[10px] text-white/30 font-mono uppercase">Entered Username / Email:</span>
+                    <span className="text-[10px] text-white/30 font-mono uppercase">Submitted Username / Email:</span>
                     <p className="text-sm font-mono text-white bg-white/5 rounded px-3 py-1.5 mt-0.5 border border-white/5 truncate">
                       {capturedData?.username || '(empty)'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-white/30 font-mono uppercase">Entered Password:</span>
+                    <span className="text-[10px] text-white/30 font-mono uppercase">Submitted Password:</span>
                     <p className="text-sm font-mono text-red-400 bg-red-500/10 rounded px-3 py-1.5 mt-0.5 border border-red-500/20 font-bold truncate">
                       {capturedData?.password || '(empty)'}
                     </p>
@@ -444,16 +444,16 @@ export const SimulatorPage: React.FC = () => {
                 </div>
                 <p className="mt-3.5 text-[11px] text-white/30 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
-                  Safety notice: Your credentials were only processed in your browser memory for this demonstration.
+                  Safety notice: Processed in isolated simulation session memory for risk evaluation.
                 </p>
               </div>
             </div>
 
-            {/* Educational Breakdown */}
+            {/* Attack Breakdown */}
             <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 space-y-4">
               <h3 className="font-semibold text-white text-base flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-blue-400" />
-                How to Spot This Phishing Lure in the Future
+                <ShieldAlert className="w-5 h-5 text-blue-400" />
+                Attack Vector Analysis & Indicators
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div className="rounded-lg bg-white/[0.02] border border-white/5 p-4 space-y-2">
@@ -545,14 +545,14 @@ export const SimulatorPage: React.FC = () => {
       <header className="text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-400 text-xs font-medium mb-3">
           <Sparkles className="w-3.5 h-3.5" />
-          End-to-End Educational Email Simulator
+          Autonomous Phishing Assessment Engine
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-          Phishing Simulator & Training Engine
+          Phishing Simulator & Campaign Engine
         </h1>
         <p className="mt-3 text-white/50 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-          Dispatch realistic educational phishing simulations to test addresses, track recipient interactions in real-time,
-          and deliver interactive educational awareness reveals.
+          Dispatch realistic phishing campaigns to assess vulnerability, track recipient interactions in real-time,
+          and analyze credential compromise vectors.
         </p>
       </header>
 
@@ -628,11 +628,11 @@ export const SimulatorPage: React.FC = () => {
             >
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-2">
                 <Mail className="w-5 h-5 text-blue-400" />
-                Launch Real Email Phishing Simulation
+                Launch Simulation Campaign
               </h2>
               <p className="text-sm text-white/50 leading-relaxed mb-6">
-                Enter your real test/dummy email address. PhishGuard will dispatch an authentic educational lure containing
-                a unique tracking token and academic disclaimers.
+                Enter your target test email address. PhishGuard will dispatch an authentic attack scenario containing
+                a unique tracking token and telemetry instrumentation.
               </p>
 
               {dispatchError && (
@@ -653,19 +653,19 @@ export const SimulatorPage: React.FC = () => {
                       type="email"
                       value={dispatchEmail}
                       onChange={(e) => setDispatchEmail(e.target.value)}
-                      placeholder="e.g. your-test-inbox@gmail.com"
+                      placeholder="e.g. security-audit@company.io"
                       required
                       className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/50 transition-all"
                     />
                   </div>
                   <p className="mt-2 text-[11px] text-white/30">
-                    Tip: Use your own test mailbox or dummy account to experience the recipient attack path firsthand.
+                    Tip: Use an authorized mailbox to experience the recipient attack path firsthand.
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-3">
-                    Select Educational Phishing Scenario
+                    Select Phishing Scenario Template
                   </label>
                   {loadingTemplates ? (
                     <div className="flex items-center justify-center p-8 text-white/30">
@@ -713,16 +713,16 @@ export const SimulatorPage: React.FC = () => {
                     ) : (
                       <Send className="w-4 h-4 mr-2" />
                     )}
-                    Send Educational Email
+                    Dispatch Simulation Email
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setDispatchEmail('student.test@college.edu');
+                      setDispatchEmail('target.audit@phishguard-internal.io');
                     }}
                     className="text-xs text-white/40 hover:text-white/70 transition-colors"
                   >
-                    Fill sample test email
+                    Fill sample target email
                   </button>
                 </div>
               </form>
@@ -1119,10 +1119,10 @@ export const SimulatorPage: React.FC = () => {
           {/* Stepper */}
           <div className="flex items-center justify-center gap-1 sm:gap-2 text-xs">
             {[
-              { key: 'setup', label: '1. Setup', icon: GraduationCap },
+              { key: 'setup', label: '1. Setup', icon: Sliders },
               { key: 'message', label: '2. Email Lure', icon: Mail },
               { key: 'login', label: '3. Fake Login', icon: KeyRound },
-              { key: 'submitted', label: '4. Educational Reveal', icon: Eye },
+              { key: 'submitted', label: '4. Security Debrief', icon: Eye },
             ].map((s) => {
               const activeIdx = demoStage === 'submitted' ? 3 : demoStage === 'login' ? 2 : demoStage === 'message' ? 1 : 0;
               const sIdx = ['setup', 'message', 'login', 'submitted'].indexOf(s.key);
@@ -1153,15 +1153,15 @@ export const SimulatorPage: React.FC = () => {
           {demoStage === 'setup' && (
             <div className="rounded-xl border border-white/8 bg-white/[0.03] p-6 space-y-4 max-w-lg mx-auto">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-blue-400" />
-                Browser Demonstration Setup
+                <Sliders className="w-5 h-5 text-blue-400" />
+                Browser Simulation Setup
               </h3>
               <p className="text-xs text-white/50 leading-relaxed">
                 Experience the full phishing simulation directly in your browser without waiting for an email delivery.
               </p>
               <div>
                 <label className="block text-xs font-semibold text-white/70 mb-1.5">
-                  Fictional Target Email
+                  Simulation Target Email
                 </label>
                 <input
                   type="email"

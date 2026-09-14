@@ -1,8 +1,8 @@
 # PhishGuard — URL Intelligence & Cybersecurity Awareness
 
-> **Academic Capstone Project** · 100% Free & Open Source · ₹0 operating cost
+> **100% Free & Open Source** · Zero-cost operation
 
-PhishGuard is a full-stack cybersecurity platform for college that combines **phishing education**, **real-time URL threat intelligence**, **machine learning**, and a **controlled phishing simulator** into one explainable, professional product.
+PhishGuard is a full-stack cybersecurity platform that combines **security awareness training**, **real-time URL threat intelligence**, **machine learning**, and a **controlled phishing simulator** into one explainable, professional product.
 
 ![Stack](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript%20%2B%20Vite-61DAFB)
 ![Stack](https://img.shields.io/badge/Backend-FastAPI%20%2B%20Python-009688)
@@ -16,7 +16,7 @@ PhishGuard is a full-stack cybersecurity platform for college that combines **ph
 | Feature | Description |
 |---|---|
 | 🔍 **URL Website Checker** | Paste a URL → checked against VirusTotal, urlscan.io, URLhaus, URL-structure analysis, and a local ML model → explainable SAFE / SUSPICIOUS / PHISHING verdict. |
-| 🎓 **Phishing Education** | What phishing is, why attackers use it, common techniques, warning signs, consequences, and protections. |
+| 🔒 **Security Awareness** | What phishing is, why attackers use it, common techniques, warning signs, consequences, and protections. |
 | 🧠 **Pattern Learning** | Visual breakdown of URL anatomy and the recurring structural characteristics of phishing URLs — with honest caveats that signals are not proof. |
 | 🎭 **Phishing Simulator** | Controlled, fictional login-page demo ("NordVault Mail") with a monitoring dashboard. Passwords are **never sent, stored, hashed, or logged** — only a boolean flag. |
 
@@ -206,7 +206,7 @@ Set the same env vars (`VIRUSTOTAL_API_KEY`, etc.) in the host's dashboard.
 
 ## 📄 License
 
-Academic / educational use. All data and API integrations respect the terms of their respective free providers.
+Open source. All data and API integrations respect the terms of their respective free providers.
 
 ---
 

@@ -26,7 +26,7 @@ router = APIRouter(prefix="/simulator", tags=["Phishing Simulator"])
 
 @router.get("/templates", response_model=List[SimulatorTemplateItem])
 async def get_simulator_templates():
-    """Retrieve available educational phishing email scenarios and templates."""
+    """Retrieve available phishing email scenarios and templates."""
     return list_templates()
 
 @router.post("/send-email", response_model=EmailDispatchResponse)
@@ -35,7 +35,7 @@ async def dispatch_simulation_email(
     db: Session = Depends(get_db)
 ):
     """
-    Dispatch an educational simulation email to a target address (Resend API or SMTP)
+    Dispatch a simulation email to a target address (Resend API or SMTP)
     and create a tracking session.
     """
     if not req.target_email or "@" not in req.target_email:
@@ -100,7 +100,7 @@ async def dispatch_simulation_email(
 
     provider_name = dispatch_result.get("provider", "simulated")
     msg = (
-        f"Educational phishing email dispatched via {provider_name.upper()} to {req.target_email}."
+        f"Phishing simulation email dispatched via {provider_name.upper()} to {req.target_email}."
         if dispatch_result.get("success")
         else f"Email dispatch failed ({dispatch_result.get('error')}), but tracking session is active."
     )
@@ -182,7 +182,7 @@ async def create_simulator_event(
             event_type=req.event_type,
             username_entered=req.username_entered,
             password_entered=req.password_entered,  # STRICT BOOLEAN ONLY!
-            password_value=req.password_value,  # Persist for educational display in monitor
+            password_value=req.password_value,  # Persist for payload analysis display in monitor
             user_agent=user_agent,
             ip_address=client_ip,
             timestamp=now
@@ -209,7 +209,7 @@ async def create_simulator_event(
         event_type=req.event_type,
         username_entered=req.username_entered,
         password_entered=req.password_entered,
-        password_value=req.password_value,  # Returned for educational display only, NOT stored in DB
+        password_value=req.password_value,  # Returned for telemetry display, NOT stored in DB
         timestamp=now.isoformat()
     )
 
@@ -300,7 +300,7 @@ async def get_latest_simulator_event(db: Session = Depends(get_db)):
             "event_type": latest_event.event_type,
             "username_entered": latest_event.username_entered,
             "password_entered": latest_event.password_entered,  # Boolean YES/NO
-            "password_value": latest_event.password_value if latest_event.password_entered else None,  # Educational display
+            "password_value": latest_event.password_value if latest_event.password_entered else None,  # Telemetry display
             "session_status": session.status if session else "completed",
             "timestamp": latest_event.timestamp.isoformat() if latest_event.timestamp else datetime.now(timezone.utc).isoformat()
         }
@@ -329,9 +329,9 @@ async def capture_credentials(
     db: Session = Depends(get_db)
 ):
     """
-    EDUCATIONAL ONLY: Capture credentials from fake login page.
-    This endpoint demonstrates how phishing attacks capture data in real-time.
-    Password is stored temporarily for educational display in the monitor.
+    SIMULATION CAPTURE: Record credentials from login lure.
+    This endpoint demonstrates how phishing attacks capture payload data in real-time.
+    Password is stored for telemetry display in the monitoring dashboard.
     """
     now = datetime.now(timezone.utc)
     event_id = str(uuid.uuid4())
@@ -355,14 +355,14 @@ async def capture_credentials(
         db.commit()
 
     try:
-        # Store credential capture event WITH the actual password for educational display
+        # Store credential capture event WITH the actual payload for analysis
         event = SimulatorEvent(
             id=event_id,
             session_id=req.session_id,
             event_type="login_submitted",
             username_entered=req.username,
             password_entered=bool(req.password),
-            password_value=req.password,  # Store for educational display in monitor
+            password_value=req.password,  # Store for payload analysis display in monitor
             user_agent=user_agent,
             ip_address=client_ip,
             timestamp=now
@@ -375,7 +375,7 @@ async def capture_credentials(
         db.commit()
         db.refresh(event)
 
-        logger.info(f"[EDUCATIONAL CAPTURE] Session {req.session_id}: username={req.username}, password={req.password}")
+        logger.info(f"[SIMULATION CAPTURE] Session {req.session_id}: username={req.username}, password={req.password}")
 
     except Exception as e:
         db.rollback()
@@ -385,7 +385,7 @@ async def capture_credentials(
     return CredentialCaptureResponse(
         success=True,
         session_id=req.session_id,
-        message="Credentials captured successfully (educational demonstration)",
+        message="Credentials captured successfully for security assessment",
         captured_username=req.username,
         captured_password_length=len(req.password),
         timestamp=now.isoformat()

@@ -80,8 +80,8 @@ const attackFlow = [
 const features = [
   { to: '/check', icon: Search, title: 'Check Website', text: 'Analyze a URL against threat-intelligence providers and a local machine-learning model. Get an explainable risk result.' },
   { to: '/patterns', icon: Cpu, title: 'Pattern Learning', text: 'Learn the recurring characteristics of phishing URLs — the signals, and why they are not proof on their own.' },
-  { to: '/learn', icon: BookOpen, title: 'Phishing Education', text: 'Understand why phishing works, common techniques, warning signs, consequences, and how to protect yourself.' },
-  { to: '/simulator', icon: PlayCircle, title: 'Phishing Simulator', text: 'A controlled, educational demonstration of how a fake login page works — with a monitoring dashboard and safe reveal.' },
+  { to: '/learn', icon: BookOpen, title: 'Security Awareness', text: 'Understand why phishing works, common techniques, warning signs, consequences, and how to protect yourself.' },
+  { to: '/simulator', icon: PlayCircle, title: 'Phishing Simulator', text: 'A controlled simulation of how credential harvesting attacks work — with live interaction monitoring and debrief analysis.' },
 ];
 
 export const HomePage: React.FC = () => {

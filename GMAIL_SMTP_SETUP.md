@@ -109,7 +109,7 @@ Once SMTP is configured, here's what happens:
 
 1. **You dispatch** an email via the PhishGuard simulator
 2. **Real email arrives** in the target's Gmail inbox with:
-   - ⚠️ Red warning banner: "DO NOT CLICK - EDUCATIONAL TEST"
+   - ⚠️ Red warning banner: "DO NOT CLICK - SECURITY SIMULATION"
    - Realistic phishing lure (fake security alert)
    - Unique tracking link with session_id
 3. **Target clicks** the link → opens your fake login page
@@ -171,6 +171,6 @@ Once SMTP is working:
 - Test with your own dummy Gmail accounts
 - Watch the **Live Monitor** tab for real-time credential capture
 - Review the **Session History** to see who clicked and submitted
-- Use this for your CEP project demonstration
+- Use this for authorized security assessment demonstrations
 
-**Educational Purpose**: This simulator is for cybersecurity awareness training only. Always include clear disclaimers in emails.
+**Simulation Purpose**: This simulator is for authorized security awareness assessment only. Always include clear disclaimers in emails.

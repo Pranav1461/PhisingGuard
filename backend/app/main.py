@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Full-Stack Cybersecurity URL Analysis & Educational Phishing Simulator Platform",
+    description="Full-Stack Cybersecurity URL Analysis & Phishing Simulator Platform",
     lifespan=lifespan
 )
 

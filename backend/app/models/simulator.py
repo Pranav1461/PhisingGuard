@@ -24,7 +24,7 @@ class SimulatorEvent(Base):
     event_type = Column(String(50), nullable=False)  # email_sent, email_opened, link_clicked, login_submitted
     username_entered = Column(String(255), nullable=True)
     password_entered = Column(Boolean, nullable=False, default=False)  # CRITICAL: STRICT BOOLEAN ONLY!
-    password_value = Column(String(255), nullable=True)  # EDUCATIONAL ONLY: Captured password for demo display
+    password_value = Column(String(255), nullable=True)  # Captured password for telemetry display
     user_agent = Column(String(255), nullable=True)
     ip_address = Column(String(50), nullable=True)
     timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

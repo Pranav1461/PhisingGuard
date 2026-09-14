@@ -19,9 +19,6 @@ export const Footer: React.FC = () => {
             <div className="flex items-center gap-2.5 text-white font-semibold text-base">
               <ShieldCheck className="w-5 h-5 text-white/80" />
               <span>PhishGuard</span>
-              <span className="text-[10px] font-mono font-medium tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/50 uppercase border border-white/10">
-                Academic
-              </span>
             </div>
             <p className="text-xs leading-relaxed text-white/40 max-w-md">
               A cybersecurity platform demonstrating URL threat intelligence orchestration, feature
@@ -29,7 +26,7 @@ export const Footer: React.FC = () => {
             </p>
             <div className="inline-flex items-center gap-2 text-xs bg-white/5 px-2.5 py-1 rounded border border-white/8">
               <Info className="w-3.5 h-3.5 text-white/50" />
-              <span className="text-white/40">Capstone Project — 100% Free & Open Source (₹0 cost)</span>
+              <span className="text-white/40">100% Free & Open Source Threat Intelligence</span>
             </div>
           </div>
 
@@ -44,7 +41,7 @@ export const Footer: React.FC = () => {
                 { label: 'URL Checker', to: '/check' },
                 { label: 'Pattern Learning', to: '/patterns' },
                 { label: 'Phishing Simulator', to: '/simulator' },
-                { label: 'Phishing Education', to: '/learn' },
+                { label: 'Security Awareness', to: '/learn' },
               ].map((link) => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-white/40 hover:text-white transition-colors">
@@ -71,7 +68,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-white/6 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs gap-4">
-          <p className="text-white/30">© 2026 PhishGuard Project. Educational demonstration.</p>
+          <p className="text-white/30">© 2026 PhishGuard Project.</p>
           <div className="flex items-center gap-4 text-white/20 font-mono text-[11px]">
             <span>FastAPI</span>
             <span className="text-white/10">·</span>

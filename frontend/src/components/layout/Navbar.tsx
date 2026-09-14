@@ -73,9 +73,6 @@ export const Navbar: React.FC = () => {
               </div>
               <span className="font-semibold text-[15.5px] tracking-[-0.03em] text-white flex items-center gap-1">
                 PhishGuard
-                <span className="text-[10px] font-mono font-medium tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/60 uppercase border border-white/10">
-                  Academic
-                </span>
               </span>
             </NavLink>
 

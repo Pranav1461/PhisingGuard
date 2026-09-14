@@ -59,7 +59,7 @@ export const LearnPage: React.FC = () => {
     <div ref={ref} className="max-w-4xl mx-auto space-y-20">
       {/* Header */}
       <header className="text-center scroll-reveal">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">Phishing education</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">Security Awareness & Defense</h1>
         <p className="mt-3 text-white/50 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
           Phishing is one of the most common ways accounts get compromised. Understanding how it
           works is the first line of defense.

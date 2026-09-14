@@ -41,7 +41,7 @@ class SimulatorEventCreate(BaseModel):
     event_type: str = Field(..., json_schema_extra={"example": "login_submitted"})
     username_entered: Optional[str] = Field(None, json_schema_extra={"example": "demo@example.test"})
     password_entered: bool = Field(..., description="Boolean: was the password field filled?")
-    password_value: Optional[str] = Field(None, description="The actual typed password (educational demo only, never persisted to DB).")
+    password_value: Optional[str] = Field(None, description="The actual typed password for telemetry display (not persisted to DB).")
     user_agent: Optional[str] = None
 
 class SimulatorEventResponse(BaseModel):
@@ -78,7 +78,7 @@ class CredentialCaptureRequest(BaseModel):
     """Schema for capturing credentials from the fake login page."""
     session_id: str = Field(..., json_schema_extra={"example": "sim-abc12345"})
     username: str = Field(..., json_schema_extra={"example": "victim@example.com"})
-    password: str = Field(..., description="The actual password typed (for educational display, NOT stored permanently)")
+    password: str = Field(..., description="The actual password typed for telemetry display (not stored permanently)")
     user_agent: Optional[str] = None
 
 class CredentialCaptureResponse(BaseModel):
