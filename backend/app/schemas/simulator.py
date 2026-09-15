@@ -5,10 +5,15 @@ class SimulatorTemplateItem(BaseModel):
     id: str
     name: str
     category: str
+    scenario_type: str = "login"       # login | subscription | storage | delivery | reward | support | document
     difficulty: str
     subject: str
     sender_name: str
     sender_email_display: str
+    fictional_org: str = ""
+    manipulation: List[str] = []
+    red_flags: List[str] = []
+    safe_action: str = ""
     lure_description: str
 
 class EmailDispatchCreate(BaseModel):

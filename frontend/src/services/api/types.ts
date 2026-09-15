@@ -48,10 +48,16 @@ export interface SimulatorTemplateItem {
   id: string;
   name: string;
   category: string;
+  /** Determines interaction type: login | subscription | storage | delivery | reward | support | document */
+  scenario_type: string;
   difficulty: string;
   subject: string;
   sender_name: string;
   sender_email_display: string;
+  fictional_org: string;
+  manipulation: string[];
+  red_flags: string[];
+  safe_action: string;
   lure_description: string;
 }
 
