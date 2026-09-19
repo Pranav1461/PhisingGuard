@@ -513,7 +513,7 @@ No single threat intelligence source catches everything:
 
 By combining three independent sources, PhishGuard increases detection coverage.
 
-### How Conflicting Results Are Handled
+### How Conflicting Results Are Handl
 
 The Risk Engine uses a **weighted scoring system** — each signal contributes independently to the final score:
 
@@ -901,67 +901,140 @@ Multiple signals providing consistent evidence is what makes an assessment relia
 
 ---
 
-## 15. PHISHING SIMULATOR
+## 15. FRAUD SIMULATION ENGINE
 
 ### Why We Built It
 
-Understanding phishing theoretically is different from experiencing it. The simulator walks users through a realistic attack flow so they understand:
+Understanding phishing theoretically is different from experiencing it. The Fraud Simulation Engine walks users through realistic attack flows across **7 distinct fraud categories** so they understand:
 
-1. How convincing phishing emails look
-2. How fake login pages work
-3. What information attackers capture
+1. How convincing fraud emails look across different contexts
+2. How fake interaction pages work for different scam types
+3. What information attackers capture in each scenario
 4. How to recognize these attacks in real life
 
-### Simulation Flow
+### Scenario Categories (7 Categories, 25+ Templates)
+
+| Category | Scenario Type | Example Templates |
+|----------|---------------|-------------------|
+| **Account / Login** | `login` | NordVault Security Alert, Vertex Labs Verification, Northstar Password Expiry, Bluewave Suspension |
+| **Subscription / Billing** | `subscription` | StreamBox Payment Failed, TuneWave Renewal, GameSphere Refund, CloudVault Billing |
+| **Storage** | `storage` | CloudDrive Storage Full, CloudVault Backup Full, PhotoVault Photo Storage |
+| **Delivery** | `delivery` | ParcelPro Delivery Failed, SwiftShip Customs Fee, ParcelPro Redelivery |
+| **Reward / Prize** | `reward` | CashBack Hub Cashback, LoyaltyPlus Prize, PointsMax Voucher |
+| **Support / Technical** | `support` | Northstar Security Alert, Vertex Labs Fake IT Support, Bluewave Security Warning |
+| **HR / Document** | `document` | Northstar HR Policy, Vertex Payroll Update, Bluewave Invoice, CloudVault Identity |
+
+### Simulation Flow (Per Scenario)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ STEP 1: SETUP                                               │
-│ User enters a fictional email address                       │
-│ e.g., demo@example.test                                     │
-│ Click "Begin simulation"                                    │
+│ User selects a scenario category & specific template        │
+│ Enters a fictional email address                            │
+│ Click "Proceed to Simulated Email"                          │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ STEP 2: MESSAGE                                              │
-│ Fictional email from "accounts@nordvault-mail.nfo"          │
-│ "Your mailbox will be locked in 24 hours unless you         │
-│  verify your account"                                       │
-│ Click "Open the email"                                      │
+│ STEP 2: EMAIL                                                │
+│ Fictional email with scenario-specific content              │
+│ Red flag indicators shown inline                            │
+│ Click "Click the link in this email"                        │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ STEP 3: LOGIN                                                │
-│ Fake "NordVault Mail" login page                             │
-│ User enters username and password                            │
-│ Password field has show/hide toggle (reveals typed password)│
-│ Click "Sign In"                                              │
+│ STEP 3: INTERACTION                                          │
+│ Scenario-specific fake page (login / payment / storage /    │
+│ delivery / reward / support / document)                     │
+│ Form fields adapted to scenario type                        │
+│ Password fields have show/hide toggle                       │
+│ Click scenario-appropriate submit button                    │
 └──────────────────────────┬──────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ STEP 4: REVEAL                                               │
-│ Shows what the attacker captured:                            │
-│ - Email/username entered                                     │
-│ - Password entered (the actual typed password, shown         │
-│   educationally in the browser only)                         │
-│ Educational explanation of what just happened                │
-│ "Refresh" to view the monitoring dashboard                   │
+│ STEP 4: REVEAL & EDUCATION                                   │
+│ Shows what the attacker captured (email, password, card,    │
+│ address, bank details, etc. — actual typed values shown)    │
+│ Educational breakdown: Attack Type, Fictional Organisation, │
+│ Manipulation Techniques, Red Flags, Safe Action             │
+│ "Try Another Scenario" or "View in Live Monitor"            │
 └──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│ MONITORING DASHBOARD                                         │
-│ Shows: session ID, target email, event history               │
-│ Events: email_opened, link_clicked, login_submitted          │
-│ Each event has a timestamp                                   │
-│ "Reset" to start over                                       │
-└─────────────────────────────────────────────────────────────┘
 ```
 
-### Mermaid Diagram
+### Scenario-Specific Interaction Pages
+
+| Scenario Type | Page Title | Primary Field | Secondary Field | Submit Label | URL Bar |
+|---------------|------------|---------------|-----------------|--------------|---------|
+| `login` | Verify Your Identity | Email or Username | Password | Sign In & Verify | `https://verify.{domain}/auth` |
+| `subscription` | Update Payment Details | Card Number | Expiry / CVV | Update Payment Method | `https://billing.{domain}/update` |
+| `storage` | Upgrade Your Storage | Account Email | Account Password | Confirm & Upgrade | `https://upgrade.{domain}/plan` |
+| `delivery` | Confirm Delivery Address | Full Name | Delivery Address | Confirm & Reschedule | `https://track.{domain}/confirm` |
+| `reward` | Claim Your Reward | Full Name | Bank Account / Sort Code | Verify & Claim Prize | `https://claim.{domain}/verify` |
+| `support` | Secure Support Session | Account Email | Account Password | Start Secure Session | `https://support.{domain}/session` |
+| `document` | Document Verification Portal | Employee Email | Corporate Password | Submit & Sign Document | `https://portal.{domain}/verify` |
+
+### Scenario-Aware Live Monitor Events
+
+The Live Monitor now tracks **scenario-specific events** with appropriate severity levels:
+
+| Scenario | Event Types (in order) | Severity Progression |
+|----------|------------------------|----------------------|
+| `login` | simulation_started → email_opened → sender_inspected → link_clicked → login_page_opened → username_entered → password_interacted → login_submitted | info → info → action → warning → warning → warning → risk → risk |
+| `subscription` | simulation_started → email_opened → billing_inspected → link_clicked → renewal_page_opened → plan_viewed → renewal_cta_clicked → payment_form_opened → payment_submitted | info → info → action → warning → warning → action → warning → risk → risk |
+| `storage` | simulation_started → email_opened → warning_viewed → link_clicked → storage_page_opened → usage_viewed → upgrade_cta_clicked → login_submitted | info → info → action → warning → warning → action → warning → risk |
+| `delivery` | simulation_started → email_opened → message_inspected → link_clicked → tracking_page_opened → package_details_viewed → address_form_opened → login_submitted | info → info → action → warning → warning → action → warning → risk |
+| `reward` | simulation_started → email_opened → reward_inspected → link_clicked → reward_page_opened → reward_viewed → claim_cta_clicked → login_submitted | info → info → action → warning → warning → action → warning → risk |
+| `support` | simulation_started → email_opened → warning_viewed → link_clicked → support_page_opened → alert_viewed → support_action_started → login_submitted | info → info → action → warning → warning → action → warning → risk |
+| `document` | simulation_started → email_opened → document_inspected → link_clicked → hr_page_opened → document_viewed → form_opened → login_submitted | info → info → action → warning → warning → action → warning → risk |
+
+### Severity Levels
+
+| Severity | Color | Use Case |
+|----------|-------|----------|
+| `info` | Blue | Simulation started, email opened |
+| `action` | White/40 | User inspected something, viewed details |
+| `warning` | Amber | User clicked link, page opened, CTA clicked |
+| `risk` | Red | Form submitted, credentials/payment submitted |
+| `success` | Emerald | Simulation completed |
+
+### Result Screen (Per Scenario)
+
+The result screen now shows **scenario-specific educational content**:
+
+- **Attack Type**: The scenario category (e.g., "Subscription / Billing")
+- **Fictional Organisation**: The fake brand (e.g., "StreamBox")
+- **Manipulation Techniques**: Tags like urgency, fear, authority, scarcity, curiosity, reward
+- **Red Flags**: Scenario-specific warning signs
+- **Safe Action**: What the user should have done
+- **Captured Data**: What the attacker would have received (educational display only)
+
+### Fictional Organisations (No Real Brands Impersonated)
+
+All 25+ templates use **completely fictional organisations**:
+
+- **NordVault Mail** (login)
+- **Vertex Labs** (login, support)
+- **Northstar Systems** (login, support, HR)
+- **Bluewave** (login, support, document)
+- **StreamBox** (subscription)
+- **TuneWave** (subscription)
+- **GameSphere** (subscription)
+- **CloudVault** (subscription, storage, HR)
+- **CloudDrive** (storage)
+- **PhotoVault** (storage)
+- **ParcelPro** (delivery)
+- **SwiftShip** (delivery)
+- **CashBack Hub** (reward)
+- **LoyaltyPlus** (reward)
+- **PointsMax** (reward)
+
+All use safe fictional domains (`.nfo`, `.org`, `.io`, `.net`, `.com` patterns).
+
+---
+
+### Simulation Flow (Updated Mermaid)
 
 ```mermaid
 sequenceDiagram
@@ -970,7 +1043,7 @@ sequenceDiagram
     participant B as Backend
     participant DB as Database
 
-    U->>F: Enter email, click "Begin"
+    U->>F: Select scenario, enter email, click "Begin"
     F->>B: POST /api/simulator/session
     B->>DB: Create SimulatorSession
     B-->>F: session_id
@@ -985,27 +1058,101 @@ sequenceDiagram
     B->>DB: Save event
     B-->>F: event recorded
 
-    U->>F: Enter username/password, submit
+    U->>F: Scenario-specific interaction page opens
+    F->>B: POST /api/simulator/events (login_page_opened / renewal_page_opened / etc.)
+    B->>DB: Save event
+    B-->>F: event recorded
+
+    U->>F: Enter data, submit
     F->>B: POST /api/simulator/events (login_submitted)
     Note right of F: password_entered: true (boolean only)
     Note right of F: actual password NEVER sent to backend
     B->>DB: Save event
     B-->>F: event recorded
 
-    F->>U: Educational reveal — shows captured data
+    F->>U: Educational reveal — shows captured data + scenario-specific education
     F->>B: GET /api/simulator/events/latest
     B->>DB: Query events
     B-->>F: All events for monitoring
 ```
 
-### Fictional Service
+### Fictional Service (Expanded)
 
-The simulator uses **"NordVault Mail"** — a completely fictional email service. It does NOT impersonate any real company (Google, Microsoft, banks, etc.).
+The simulator uses **25+ fictional services** — completely fictional organisations. It does NOT impersonate any real company (Google, Microsoft, banks, etc.).
 
 This is important because:
 1. It avoids legal issues with brand impersonation
 2. It clearly communicates "this is a demo" to users
-3. It still demonstrates the same psychological tactics real phishing uses
+3. It still demonstrates the same psychological tactics real fraud uses
+4. Each fictional org has its own domain pattern and visual identity
+
+---
+
+### Simulation Flow (Mermaid — Updated)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant DB as Database
+
+    U->>F: Select scenario, enter email, click "Begin"
+    F->>B: POST /api/simulator/session
+    B->>DB: Create SimulatorSession
+    B-->>F: session_id
+
+    U->>F: Click "Open email"
+    F->>B: POST /api/simulator/events (email_opened)
+    B->>DB: Save event
+    B-->>F: event recorded
+
+    U->>F: Click link in email
+    F->>B: POST /api/simulator/events (link_clicked)
+    B->>DB: Save event
+    B-->>F: event recorded
+
+    U->>F: Scenario-specific interaction page opens
+    F->>B: POST /api/simulator/events (login_page_opened / renewal_page_opened / etc.)
+    B->>DB: Save event
+    B-->>F: event recorded
+
+    U->>F: Enter data, submit
+    F->>B: POST /api/simulator/events (login_submitted)
+    Note right of F: password_entered: true (boolean only)
+    Note right of F: actual password NEVER sent to backend
+    B->>DB: Save event
+    B-->>F: event recorded
+
+    F->>U: Educational reveal — shows captured data + scenario-specific education
+    F->>B: GET /api/simulator/events/latest
+    B->>DB: Query events
+    B-->>F: All events for monitoring
+```
+
+### Fictional Services (Expanded)
+
+The simulator uses **25+ fictional services** across 7 categories — completely fictional organisations. It does NOT impersonate any real company (Google, Microsoft, banks, etc.).
+
+This is important because:
+1. It avoids legal issues with brand impersonation
+2. It clearly communicates "this is a demo" to users
+3. It still demonstrates the same psychological tactics real fraud uses
+4. Each fictional org has its own domain pattern and visual identity
+
+### All Fictional Organisations by Category
+
+| Category | Organisations |
+|----------|---------------|
+| **Account / Login** | NordVault Mail, Vertex Labs, Northstar Systems, Bluewave |
+| **Subscription / Billing** | StreamBox, TuneWave, GameSphere, CloudVault |
+| **Storage** | CloudDrive, CloudVault Backup, PhotoVault |
+| **Delivery** | ParcelPro, SwiftShip Customs |
+| **Reward / Prize** | CashBack Hub, LoyaltyPlus, PointsMax |
+| **Support / Technical** | Northstar Systems Security, Vertex Labs IT, Bluewave Security |
+| **HR / Document** | Northstar Systems HR, Vertex Labs Payroll, Bluewave Finance, CloudVault Workplace |
+
+All use safe fictional domains (`.nfo`, `.org`, `.io`, `.net`, `.com` patterns).
 
 ---
 

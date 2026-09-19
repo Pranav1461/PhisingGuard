@@ -53,6 +53,7 @@ import type {
   SimulatorSessionDetailResponse,
 } from '../services/api/types';
 import { ReviewCTA } from '../components/ReviewCTA';
+import { SimulationInteractPage } from '../components/SimulationInteractPage';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -141,13 +142,13 @@ function buildInteractionConfig(tpl: SimulatorTemplateItem) {
 
   // Scenario-specific URL bars (fictional domains from templates)
   const urlBarMap: Record<string, string> = {
-    login: `https://verify.${senderDisplay.replace(/.*@/, '')}/auth`,
-    subscription: `https://billing.${senderDisplay.replace(/.*@/, '')}/update`,
-    storage: `https://upgrade.${senderDisplay.replace(/.*@/, '')}/plan`,
-    delivery: `https://track.${senderDisplay.replace(/.*@/, '')}/confirm`,
-    reward: `https://claim.${senderDisplay.replace(/.*@/, '')}/verify`,
-    support: `https://support.${senderDisplay.replace(/.*@/, '')}/session`,
-    document: `https://portal.${senderDisplay.replace(/.*@/, '')}/verify`,
+    login: 'https://verify.mockmail.com/auth',
+    subscription: 'https://billing.mockmail.com/update',
+    storage: 'https://upgrade.mockmail.com/plan',
+    delivery: 'https://track.mockmail.com/confirm',
+    reward: 'https://claim.mockmail.com/verify',
+    support: 'https://support.mockmail.com/session',
+    document: 'https://portal.mockmail.com/verify',
   };
 
   // Scenario-specific titles/subtitles derived from scenario data
@@ -745,8 +746,18 @@ export const SimulatorPage: React.FC = () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (isTargetMode) {
-    const scenarioType = 'login'; // target mode always shows login for now
-    const interaction = SCENARIO_INTERACTION[scenarioType];
+    const interaction = buildInteractionConfig({
+      id: 'target-login', name: 'NordVault', category: 'Account / Login',
+      scenario_type: 'login', difficulty: 'Medium',
+      subject: 'Unusual sign-in detected — verify your identity',
+      sender_name: 'NordVault Security',
+      sender_email_display: 'security-alerts@nordvault-mail.nfo',
+      fictional_org: 'NordVault',
+      manipulation: ['urgency', 'fear', 'authority'],
+      red_flags: ['suspicious sender domain', 'account suspension threat'],
+      safe_action: 'Navigate directly to the site — do not click email links.',
+      lure_description: 'Urgent account security alert claiming your mailbox will be locked in 24 hours.',
+    });
     return (
       <div className="max-w-2xl mx-auto py-4">
         <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 flex items-center justify-between text-xs text-amber-200">
@@ -900,7 +911,17 @@ export const SimulatorPage: React.FC = () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   const currentDemoScenarioType = demoTemplate ? getScenarioType(demoTemplate) : activeScenarioType;
-  const currentInteraction = SCENARIO_INTERACTION[currentDemoScenarioType] ?? SCENARIO_INTERACTION['login'];
+  // Build interaction config from the active scenario — falls back to a safe login default
+  const currentInteraction = demoTemplate
+    ? buildInteractionConfig(demoTemplate)
+    : buildInteractionConfig({
+        id: 'fallback', name: 'NordVault', category: 'Account / Login',
+        scenario_type: 'login', difficulty: 'Medium',
+        subject: 'Verify your account', sender_name: 'NordVault Security',
+        sender_email_display: 'security@nordvault-mail.nfo',
+        fictional_org: 'NordVault', manipulation: [], red_flags: [],
+        safe_action: '', lure_description: '',
+      });
 
   return (
     <div className="relative min-h-screen">
@@ -1619,83 +1640,34 @@ export const SimulatorPage: React.FC = () => {
 
               {/* ── STAGE: INTERACT ── */}
               {demoStage === 'interact' && demoTemplate && (
-                <div className="max-w-md mx-auto">
+                <div className="max-w-lg mx-auto">
                   {targetError && (
                     <p role="alert" className="mb-4 text-xs text-amber-400 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       {targetError}
                     </p>
                   )}
-                  <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-md overflow-hidden shadow-2xl shadow-black/60">
-                    {/* Fake browser chrome */}
-                    <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
-                      <div className="flex gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                        <span className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                      </div>
-                      <div className="flex-1 mx-2 h-6 rounded bg-white/5 flex items-center px-2.5">
-                        <Lock className="w-3 h-3 text-amber-400/80 mr-1.5 shrink-0" />
-                        <span className="text-[11px] text-white/40 font-mono truncate">
-                          {currentInteraction.urlBar}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-7">
-                      <div className="text-center mb-6">
-                        <div className={`w-12 h-12 mx-auto rounded-2xl flex items-center justify-center mb-3 border ${SCENARIO_COLORS[currentDemoScenarioType] ?? SCENARIO_COLORS['login']}`}>
-                          {React.createElement(SCENARIO_ICONS[currentDemoScenarioType] ?? Lock, { className: 'w-6 h-6' })}
-                        </div>
-                        <h2 className="text-lg font-bold text-white">{currentInteraction.pageTitle}</h2>
-                        <p className="text-xs text-white/40 mt-1">{currentInteraction.pageSubtitle}</p>
-                      </div>
-
-                      <form onSubmit={handleSubmitInteraction} className="space-y-4">
-                        <div>
-                          <label htmlFor="demo-primary" className="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wider">
-                            {currentInteraction.primaryField.label}
-                          </label>
-                          <input id="demo-primary"
-                            type={currentInteraction.primaryField.type}
-                            value={primaryField}
-                            onChange={(e) => setPrimaryField(e.target.value)}
-                            placeholder={currentInteraction.primaryField.placeholder}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-blue-500/50 transition-all" />
-                        </div>
-                        {currentInteraction.secondaryField && (
-                          <div>
-                            <label htmlFor="demo-secondary" className="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wider">
-                              {currentInteraction.secondaryField.label}
-                            </label>
-                            <div className="relative">
-                              <input id="demo-secondary"
-                                type={showSecondary ? 'text' : currentInteraction.secondaryField.type}
-                                value={secondaryField}
-                                onChange={(e) => setSecondaryField(e.target.value)}
-                                placeholder={currentInteraction.secondaryField.placeholder}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 pr-10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-blue-500/50 transition-all" />
-                              {currentInteraction.secondaryField.type === 'password' && (
-                                <button type="button" onClick={() => setShowSecondary(!showSecondary)}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                                  {showSecondary ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        <button type="submit" disabled={submittingInteraction}
-                          className="w-full btn btn-solid h-[42px] text-sm font-semibold mt-2">
-                          {submittingInteraction ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <KeyRound className="w-4 h-4 mr-2" />}
-                          {currentInteraction.submitLabel}
-                        </button>
-                      </form>
-                      <p className="mt-5 text-center text-[11px] text-white/30 leading-relaxed">
-                        🛡️ This is an educational simulation. Do not enter real credentials or personal information.
-                      </p>
-                    </div>
-                  </div>
+                  <SimulationInteractPage
+                    key={demoTemplate.id}
+                    template={demoTemplate}
+                    scenarioType={currentDemoScenarioType}
+                    interaction={currentInteraction}
+                    primaryValue={primaryField}
+                    secondaryValue={secondaryField}
+                    showSecondary={showSecondary}
+                    submitting={submittingInteraction}
+                    error={targetError}
+                    onPrimaryChange={setPrimaryField}
+                    onSecondaryChange={setSecondaryField}
+                    onShowSecondaryToggle={() => setShowSecondary(!showSecondary)}
+                    onSubmit={handleSubmitInteraction}
+                    onIntermediateEvent={(eventType) =>
+                      addMonitorEvent(currentDemoScenarioType, eventType)
+                    }
+                  />
+                  <p className="mt-4 text-center text-[11px] text-white/20 leading-relaxed">
+                    🛡️ This is an educational simulation. Do not enter real credentials.
+                  </p>
                 </div>
               )}
 
