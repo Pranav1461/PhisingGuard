@@ -72,19 +72,19 @@ export const PatternPage: React.FC = () => {
 
       {/* URL Anatomy */}
       <section className="scroll-reveal" data-delay="0">
-        <h2 className="text-2xl font-bold text-white mb-6">URL anatomy</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">URL anatomy</h2>
         <div className="space-y-4">
           {urlsToShow.map((u) => (
-            <div key={u.label} className="glass p-5">
+            <div key={u.label} className="glass p-4 sm:p-5">
               <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">{u.label}</p>
-              <div className="font-mono text-sm flex flex-wrap gap-1">
+              <div className="font-mono text-xs sm:text-sm flex flex-wrap gap-1">
                 {u.parts.map((p) => (
                   <span key={p.text + p.kind} className={`px-2 py-1 rounded ${kinds[p.kind].className}`}>
                     {p.text}
                   </span>
                 ))}
               </div>
-              <div className="flex flex-wrap gap-3 mt-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3 mt-3">
                 {u.parts.map((p) => (
                   <span key={p.kind + p.text} className="text-[10px] text-white/25 flex items-center gap-1">
                     <span className={`w-2 h-2 rounded-sm ${kinds[p.kind].className.split(' ')[0]}`} />

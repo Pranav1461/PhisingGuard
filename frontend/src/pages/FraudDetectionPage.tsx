@@ -237,7 +237,7 @@ export const FraudDetectionPage: React.FC = () => {
           <span className="text-xs font-medium text-amber-400/70 tracking-wider uppercase">Fraud Awareness</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white text-balance">
+        <h1 className="text-[26px] sm:text-3xl md:text-4xl font-bold tracking-tight text-white text-balance">
           Fraud Detection
         </h1>
         <p className="mt-4 text-white/50 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
@@ -252,7 +252,7 @@ export const FraudDetectionPage: React.FC = () => {
 
       {/* ── What is fraud ── */}
       <section className="scroll-reveal" data-delay="0">
-        <h2 className="text-2xl font-bold text-white mb-6">What is fraud?</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">What is fraud?</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {[
             {

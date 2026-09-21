@@ -68,8 +68,8 @@ export const LearnPage: React.FC = () => {
 
       {/* What is phishing */}
       <section className="scroll-reveal" data-delay="0">
-        <h2 className="text-2xl font-bold text-white mb-4">What is phishing?</h2>
-        <p className="text-white/50 leading-relaxed">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">What is phishing?</h2>
+        <p className="text-sm sm:text-base text-white/50 leading-relaxed">
           Phishing is a social-engineering attack. Rather than breaking into a system, the attacker
           tricks a person into giving up access. The technique has scaled massively: a single
           convincing campaign can be sent to millions of inboxes at almost no cost, which is why
@@ -79,7 +79,7 @@ export const LearnPage: React.FC = () => {
 
       {/* Why attackers use it */}
       <section className="scroll-reveal" data-delay="100">
-        <h2 className="text-2xl font-bold text-white mb-4">Why do attackers use phishing?</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">Why do attackers use phishing?</h2>
         <ul className="space-y-3 text-white/50">
           {[
             'It is cheap to run at massive scale.',
@@ -97,7 +97,7 @@ export const LearnPage: React.FC = () => {
 
       {/* How attack unfolds */}
       <section className="scroll-reveal" data-delay="0">
-        <h2 className="text-2xl font-bold text-white mb-6">How a phishing attack unfolds</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">How a phishing attack unfolds</h2>
         <div className="relative">
           <div className="absolute left-[18px] top-0 bottom-0 w-px bg-white/8" aria-hidden="true" />
           <ol className="space-y-4">
