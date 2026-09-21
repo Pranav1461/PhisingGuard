@@ -67,17 +67,18 @@ function BrowserChrome({ url }: { url: string }) {
 }
 
 function FieldInput({
-  id, field, value, show, onToggle, onChange, autoFocus = false,
+  id, field, value, show, onToggle, onChange, autoFocus = false, light = false,
 }: {
   id: string;
   field: { label: string; placeholder: string; type: string };
   value: string; show?: boolean; onToggle?: () => void;
   onChange: (v: string) => void; autoFocus?: boolean;
+  light?: boolean;
 }) {
   const isPassword = field.type === 'password';
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+      <label htmlFor={id} className={`block text-xs font-semibold mb-1.5 uppercase tracking-wider ${light ? 'text-slate-500' : 'text-white/60'}`}>
         {field.label}
       </label>
       <div className="relative">
@@ -90,11 +91,15 @@ function FieldInput({
           autoComplete="off"
           required
           autoFocus={autoFocus}
-          className="w-full rounded-lg border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all pr-10"
+          className={`w-full rounded-lg border px-3.5 py-2.5 text-sm transition-all pr-10 ${
+            light
+              ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              : 'border-white/12 bg-white/6 text-white placeholder:text-white/25 focus:border-white/30 focus:bg-white/8'
+          }`}
         />
         {isPassword && onToggle && (
           <button type="button" onClick={onToggle}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+            className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${light ? 'text-slate-400 hover:text-slate-600' : 'text-white/30 hover:text-white/60'}`}>
             {show ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           </button>
         )}
@@ -119,47 +124,60 @@ function LoginSimulation(props: SimulationInteractPageProps) {
 
   return (
     <motion.div {...pageEntrance}
-      className="min-h-[420px] flex flex-col rounded-xl overflow-hidden shadow-2xl shadow-black/60"
-      style={{ background: 'linear-gradient(160deg,#0d1523 0%,#0f2040 50%,#0a1628 100%)' }}>
+      className="min-h-[420px] flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/20 backdrop-blur-xl"
+      style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%)' }}>
       <BrowserChrome url={interaction.urlBar} />
       <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-10">
         {/* Logo treatment */}
-        <div className="mb-8 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg,#1d6fe8,#0f4fa0)', boxShadow: '0 0 30px rgba(29,111,232,0.4)' }}>
-            <Shield className="w-7 h-7 text-white" />
+        <div className="mb-6 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl flex items-center justify-center border border-black/5"
+            style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <Shield className="w-7 h-7 text-blue-600" />
           </div>
-          <p className="text-xs font-bold tracking-[0.2em] text-blue-300/70 uppercase mb-1">{org}</p>
-          <h2 className="text-2xl font-bold text-white tracking-tight">{interaction.pageTitle}</h2>
-          <p className="text-sm text-white/40 mt-1">{interaction.pageSubtitle}</p>
+          <p className="text-xs font-bold tracking-[0.1em] text-slate-500 uppercase mb-1">{org}</p>
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{interaction.pageTitle}</h2>
+          <p className="text-sm text-slate-500 mt-1">{interaction.pageSubtitle}</p>
         </div>
         {/* Form */}
         <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
           <FieldInput id="login-primary" label={interaction.primaryField.label}
-            field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
+            field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus light />
           {interaction.secondaryField && (
             <FieldInput id="login-secondary" label={interaction.secondaryField.label}
               field={interaction.secondaryField} value={secondaryValue}
               show={showSecondary} onToggle={onShowSecondaryToggle}
-              onChange={onSecondaryChange} />
+              onChange={onSecondaryChange} light />
           )}
-          <div className="flex items-center justify-between text-xs text-white/35 pt-1">
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded border-white/20 bg-white/5 accent-blue-500" />
+              <input type="checkbox" className="rounded border-slate-300 accent-blue-600" />
               Remember this device
             </label>
-            <button type="button" className="text-blue-400 hover:text-blue-300 transition-colors">
+            <button type="button" className="text-blue-600 hover:text-blue-700 transition-colors">
               Forgot password?
             </button>
           </div>
           <button type="submit" disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all"
-            style={{ background: submitting ? 'rgba(29,111,232,0.5)' : 'linear-gradient(135deg,#1d6fe8,#1558cc)', boxShadow: submitting ? 'none' : '0 4px 14px rgba(29,111,232,0.4)' }}>
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all shadow-md"
+            style={{ background: submitting ? '#334155' : '#1e293b' }}>
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
             {interaction.submitLabel}
           </button>
         </form>
-        <p className="mt-5 text-[11px] text-white/20 text-center max-w-xs leading-relaxed">
+        {/* Divider & Social */}
+        <div className="mt-8 w-full max-w-sm">
+          <div className="relative flex py-5 items-center">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink mx-4 text-slate-400 text-xs">Or sign in with</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+          <div className="flex gap-3 justify-center">
+            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
+            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
+            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
+          </div>
+        </div>
+        <p className="mt-8 text-[11px] text-slate-400 text-center max-w-xs leading-relaxed">
           Protected by {org} Security · By signing in you agree to our Terms
         </p>
       </div>
