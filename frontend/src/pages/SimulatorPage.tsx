@@ -461,7 +461,7 @@ export const SimulatorPage: React.FC = () => {
   const [templates, setTemplates] = useState<SimulatorTemplateItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('nordvault-security');
   const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('login');
 
   // ── Campaign dispatch state ──
   const [dispatchEmail, setDispatchEmail] = useState('');
@@ -1023,7 +1023,31 @@ export const SimulatorPage: React.FC = () => {
                     <label className="block text-xs font-semibold text-white/70 uppercase tracking-wider mb-3">
                       Scenario Category
                     </label>
-                    <div className="flex flex-wrap gap-2 mb-4">
+
+                    {/* Mobile: Compact dropdown */}
+                    <div className="sm:hidden mb-4">
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-lg border border-white/10 bg-white/[0.02] text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all appearance-none"
+                        style={{
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'right 0.75rem center',
+                          backgroundSize: '1.25rem',
+                          paddingRight: '2.5rem',
+                        }}
+                      >
+                        {CATEGORY_FILTERS.map(({ key, label }) => (
+                          <option key={key} value={key} className="bg-slate-900 text-white">
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Desktop: Button grid */}
+                    <div className="hidden sm:flex flex-wrap gap-2 mb-4">
                       {CATEGORY_FILTERS.map(({ key, label, icon: Icon }) => (
                         <button key={key} type="button" onClick={() => setCategoryFilter(key)}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
