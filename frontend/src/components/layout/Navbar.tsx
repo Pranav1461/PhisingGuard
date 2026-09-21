@@ -95,13 +95,6 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
 
-            {/* ── Desktop CTA ── */}
-            <NavLink
-              to="/check"
-              className="hidden lg:inline-flex btn btn-solid text-[13px] h-[40px] px-4 relative z-[80]"
-            >
-              Check a URL
-            </NavLink>
 
             {/* ── Mobile burger ── */}
             <button
@@ -155,13 +148,6 @@ export const Navbar: React.FC = () => {
                 </NavLink>
               );
             })}
-            <NavLink
-              to="/check"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center justify-center gap-2 mt-3 btn btn-solid h-[42px] px-5 text-sm"
-            >
-              Check a URL
-            </NavLink>
           </div>
         </div>
       </header>
