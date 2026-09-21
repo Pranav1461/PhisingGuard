@@ -105,7 +105,7 @@ export const HomePage: React.FC = () => {
 
           {/* H1 */}
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] font-medium tracking-[-0.045em] leading-[1.12] text-white"
+            className="text-[28px] sm:text-4xl md:text-5xl lg:text-[54px] xl:text-[60px] font-medium tracking-[-0.045em] leading-[1.12] text-white"
           >
             <span className="block overflow-hidden py-[0.06em] px-[0.15em] pb-[0.14em] appear appear--mask" style={{ '--d': '0.42s' } as React.CSSProperties}>
               Understand phishing.
@@ -116,7 +116,7 @@ export const HomePage: React.FC = () => {
           </h1>
 
           {/* Lede */}
-          <p className="mt-5 text-[15.5px] text-[#9a9a9a] leading-[1.55] tracking-[-0.015em] max-w-[470px] appear appear--soft" style={{ '--d': '0.82s', animationDuration: '1.25s' } as React.CSSProperties}>
+          <p className="mt-5 text-sm sm:text-[15.5px] text-[#9a9a9a] leading-[1.55] tracking-[-0.015em] max-w-[470px] appear appear--soft" style={{ '--d': '0.82s', animationDuration: '1.25s' } as React.CSSProperties}>
             PhishGuard combines threat intelligence, machine learning, and clear explainability to
             help you understand how phishing works — and check whether a website looks suspicious.
           </p>
@@ -201,20 +201,20 @@ export const HomePage: React.FC = () => {
         <h2 id="how-phishing-works" className="text-2xl md:text-3xl font-bold tracking-tight text-white">How phishing works</h2>
         <p className="mt-3 text-white/50">Follow each stage of a typical phishing attack.</p>
 
-        <ol className="mt-8 grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {attackFlow.map((stage, i) => {
             const Icon = stage.icon;
             return (
-              <li key={stage.title} className="relative flex gap-4 glass p-5">
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/5 text-white/70" aria-hidden="true">
-                  <Icon className="w-5 h-5" />
+              <li key={stage.title} className="relative flex gap-3 sm:gap-4 glass p-4 sm:p-5">
+                <span className="inline-flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-md bg-white/5 text-white/70" aria-hidden="true">
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </span>
                 <div>
-                  <p className="font-semibold text-white flex items-center gap-2">
+                  <p className="font-semibold text-sm sm:text-base text-white flex items-center gap-2">
                     <span className="font-mono text-xs text-white/30">0{i + 1}</span>
                     {stage.title}
                   </p>
-                  <p className="mt-1 text-sm text-white/40 leading-relaxed">{stage.text}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-white/40 leading-relaxed">{stage.text}</p>
                 </div>
                 {i < attackFlow.length - 1 && (
                   <ChevronRight className="absolute -right-2 top-1/2 -translate-y-1/2 hidden lg:block text-white/10" aria-hidden="true" />
@@ -230,21 +230,21 @@ export const HomePage: React.FC = () => {
       {/* ── CORE FEATURES ── */}
       <section className="relative z-[1]" aria-labelledby="core-features">
         <h2 id="core-features" className="text-2xl md:text-3xl font-bold tracking-tight text-white">Explore the platform</h2>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <Link
               key={f.to}
               to={f.to}
-              className="group glass p-6 transition-all hover:border-white/20 hover:shadow-[0_0_40px_rgba(100,120,200,0.08)]"
+              className="group glass p-5 sm:p-6 transition-all hover:border-white/20 hover:shadow-[0_0_40px_rgba(100,120,200,0.08)]"
             >
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-white/5 text-white/60 transition-colors group-hover:bg-white/10 group-hover:text-white" aria-hidden="true">
-                <f.icon className="w-5 h-5" />
+              <span className="inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-md bg-white/5 text-white/60 transition-colors group-hover:bg-white/10 group-hover:text-white" aria-hidden="true">
+                <f.icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </span>
-              <h3 className="mt-4 font-semibold text-white flex items-center gap-1">
+              <h3 className="mt-3 sm:mt-4 font-semibold text-sm sm:text-base text-white flex items-center gap-1">
                 {f.title}
                 <ChevronRight className="w-4 h-4 text-white/20 transition-transform group-hover:translate-x-0.5 group-hover:text-white/40" aria-hidden="true" />
               </h3>
-              <p className="mt-2 text-sm text-white/40 leading-relaxed">{f.text}</p>
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-white/40 leading-relaxed">{f.text}</p>
             </Link>
           ))}
         </div>
