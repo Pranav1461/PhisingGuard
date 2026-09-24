@@ -68,8 +68,6 @@ PhishGuard/
 ├── ml/                     # ML training & models
 │   ├── phishing_model.pkl
 │   └── feature_columns.json
-│
-└── start_backend.py        # Quick start script
 ```
 
 ---
@@ -103,13 +101,6 @@ npm install
 ```
 
 ### Running the Application
-
-**Option 1: Using the startup script (Recommended)**
-```bash
-python start_backend.py
-```
-
-**Option 2: Manual start**
 
 Terminal 1 - Backend:
 ```bash
