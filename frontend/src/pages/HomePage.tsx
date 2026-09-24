@@ -131,6 +131,15 @@ export const HomePage: React.FC = () => {
               <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 opacity-60" />
               Learn How Phishing Works
             </Link>
+            <a
+              href="https://forms.gle/X4TrbPDcde1axTqo7"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost h-[38px] sm:h-[42px] md:h-[46px] px-[14px] sm:px-[18px] md:px-[24px] text-[12.5px] sm:text-[13.5px] md:text-[14px] w-full sm:w-auto appear appear--side"
+              style={{ '--d': '1.24s' } as React.CSSProperties}
+            >
+              Review
+            </a>
           </div>
         </div>
       </section>

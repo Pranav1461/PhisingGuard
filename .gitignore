@@ -53,3 +53,9 @@ ml/data/dataset.csv
 # OS
 .DS_Store
 Thumbs.db
+
+# Personal convenience scripts (local use only)
+start_backend.py
+
+# Documentation (work in progress, private)
+MAIN_DOCUMENTATION.md

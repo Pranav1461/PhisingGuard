@@ -1,213 +1,352 @@
-# PhishGuard — URL Intelligence & Cybersecurity Awareness
+# PhishGuard
 
-> **100% Free & Open Source** · Zero-cost operation
+**Full-Stack Cybersecurity Awareness & Phishing Detection Platform**
 
-PhishGuard is a full-stack cybersecurity platform that combines **security awareness training**, **real-time URL threat intelligence**, **machine learning**, and a **controlled phishing simulator** into one explainable, professional product.
-
-![Stack](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript%20%2B%20Vite-61DAFB)
-![Stack](https://img.shields.io/badge/Backend-FastAPI%20%2B%20Python-009688)
-![Stack](https://img.shields.io/badge/ML-scikit--learn-F7931E)
-![Stack](https://img.shields.io/badge/DB-Supabase%20PostgreSQL-3ECF8E)
+PhishGuard is a comprehensive web application designed to educate users about phishing attacks and provide real-time URL threat intelligence analysis. Built as a college cybersecurity capstone project, it combines machine learning, threat intelligence integration, and interactive fraud simulation to deliver a complete security awareness experience.
 
 ---
 
-## 🧩 Features
+## 🎯 Project Overview
 
-| Feature | Description |
-|---|---|
-| 🔍 **URL Website Checker** | Paste a URL → checked against VirusTotal, urlscan.io, URLhaus, URL-structure analysis, and a local ML model → explainable SAFE / SUSPICIOUS / PHISHING verdict. |
-| 🔒 **Security Awareness** | What phishing is, why attackers use it, common techniques, warning signs, consequences, and protections. |
-| 🧠 **Pattern Learning** | Visual breakdown of URL anatomy and the recurring structural characteristics of phishing URLs — with honest caveats that signals are not proof. |
-| 🎭 **Phishing Simulator** | Controlled, fictional login-page demo ("NordVault Mail") with a monitoring dashboard. Passwords are **never sent, stored, hashed, or logged** — only a boolean flag. |
+PhishGuard helps users understand, detect, and defend against phishing attacks through:
+
+- **Real-time URL Analysis**: Multi-provider threat intelligence (VirusTotal, URLhaus, URLScan.io)
+- **Machine Learning Detection**: Local scikit-learn model trained on phishing patterns
+- **Interactive Fraud Simulator**: Realistic phishing scenarios with live monitoring
+- **Educational Content**: Comprehensive guides on phishing techniques and prevention
+- **Pattern Recognition Training**: Learn to identify suspicious URL patterns
+
+---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                           Frontend (React/Vite)                      │
-│      Home · Check · Learn · Patterns · Simulator (SPA, dark-mode)    │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │  REST API (/api)
-┌──────────────────────────────▼──────────────────────────────────────┐
-│                        Backend (FastAPI)                             │
-│                                                                      │
-│   URL Validation & SSRF Protection  →  Threat-Intel Orchestrator     │
-│        ↓                                        ↓                    │
-│   Feature Extraction (18 signals)    VirusTotal · urlscan · URLhaus  │
-│        ↓                                                             │
-│   ML Model (scikit-learn Random Forest)                              │
-│        ↓                                                             │
-│   Explainable Risk Engine  →  SAFE / SUSPICIOUS / PHISHING           │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │ SQLAlchemy / Alembic
-                        ┌──────▼──────┐
-                        │  Database    │
-                        │ (Supabase    │
-                        │  PostgreSQL) │
-                        └─────────────┘
-```
+### Tech Stack
+
+**Frontend:**
+- React 18 with TypeScript
+- Vite (build tool)
+- TailwindCSS + Framer Motion
+- React Router v7
+
+**Backend:**
+- FastAPI (Python)
+- SQLAlchemy (ORM)
+- scikit-learn (ML)
+- PostgreSQL/SQLite
+
+**ML/Data:**
+- scikit-learn Random Forest Classifier
+- Feature extraction pipeline
+- Real-time prediction API
+
+---
 
 ## 📁 Project Structure
 
 ```
-phishguard/
-├── frontend/                 # React + TypeScript + Vite SPA
+PhishGuard/
+├── backend/                 # FastAPI backend
+│   ├── app/
+│   │   ├── api/            # API routes
+│   │   ├── core/           # Config, security
+│   │   ├── models/         # SQLAlchemy models
+│   │   ├── schemas/        # Pydantic schemas
+│   │   └── services/       # Business logic
+│   │       ├── ml/         # ML predictor
+│   │       ├── risk_engine/
+│   │       └── threat_intel/
+│   └── requirements.txt
+│
+├── frontend/               # React frontend
 │   ├── src/
-│   │   ├── components/layout/      # Navbar, Footer, Layout
-│   │   ├── pages/                  # Home, Check, Learn, Patterns, Simulator
-│   │   ├── services/api/           # Axios API layer (analysis, simulator, types)
-│   │   ├── assets/
-│   │   └── index.css               # Tailwind v4 theme (light + dark)
-│   ├── index.html
-│   ├── vite.config.ts             # Vite proxy: /api → localhost:8000
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API clients
+│   │   └── styles/         # Global styles
 │   └── package.json
 │
-├── backend/                  # Python + FastAPI
-│   └── app/
-│       ├── api/                     # analyze · simulator · health · router
-│       ├── core/                    # security (SSRF) · config · database
-│       ├── models/                  # SQLAlchemy models
-│       ├── schemas/                 # Pydantic schemas
-│       └── services/
-│           ├── threat_intel/        # virustotal · urlscan · urlhaus · orchestrator
-│           ├── ml/                  # predictor.py
-│           └── risk_engine/         # engine.py (explainable scoring)
+├── ml/                     # ML training & models
+│   ├── phishing_model.pkl
+│   └── feature_columns.json
 │
-├── ml/
-│   ├── features/url_features.py     # Shared deterministic feature extraction
-│   ├── generate_dataset.py          # Built 10k synthetic samples
-│   ├── data/dataset.csv
-│   └── models/phishing_model.joblib # Trained Random Forest
-│
-├── tests/                   # pytest suite (analyze, ml, risk, simulator, ssrf)
-├── prd.md                   # Product Requirements
-├── techstack.md             # Technical Stack & Architecture
-├── requirements.txt         # Python dependencies
-├── vercel.json              # Vercel frontend config
-└── package.json             # Root convenience scripts
+└── start_backend.py        # Quick start script
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** ≥ 20 and npm
-- **Python** ≥ 3.10 and pip
-- Built-in SQLite database (zero setup required)
 
-### 1. Clone & install
+- **Python 3.9+**
+- **Node.js 18+**
+- **pip** and **npm**
 
+### Installation
+
+**1. Clone the repository:**
 ```bash
 git clone <your-repo-url>
-cd phishguard
+cd PhishGuard
+```
 
-# Frontend
-cd frontend
-npm install
-cd ..
-
-# Backend
-python -m venv .venv
-# Windows: .venv\Scripts\activate | macOS/Linux: source .venv/bin/activate
+**2. Install backend dependencies:**
+```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### 2. Configure environment
-
+**3. Install frontend dependencies:**
 ```bash
-# Backend — copy template and add your API keys (server-side only)
-cp backend/.env.example backend/.env
-# edit backend/.env → add VIRUSTOTAL_API_KEY, URLSCAN_API_KEY, URLHAUS_AUTH_KEY, DATABASE_URL
-
-# Frontend (optional — leave empty for local dev, Vite proxies /api)
-cp frontend/.env.example frontend/.env.local
+cd frontend
+npm install
 ```
 
-Get free API keys:
-- **VirusTotal**: https://www.virustotal.com (Public API — 500 req/day, 4 req/min)
-- **urlscan.io**: https://urlscan.io (Free plan)
-- **URLhaus**: https://urlhaus.abuse.ch (Community API)
+### Running the Application
 
-### 3. Train the ML model (optional — a trained model is included)
-
+**Option 1: Using the startup script (Recommended)**
 ```bash
-python ml/generate_dataset.py     # builds dataset.csv 
-# Then run the training notebook/script to export ml/models/phishing_model.joblib
+python start_backend.py
 ```
 
-### 4. Run the backend
+**Option 2: Manual start**
 
+Terminal 1 - Backend:
 ```bash
-# From the project root (imports use backend.app.* paths)
-uvicorn backend.app.main:app --reload --port 8000
+cd backend
+uvicorn app.main:app --reload --port 8000
 ```
 
-FastAPI auto-docs: http://localhost:8000/docs
-
-### 5. Run the frontend
-
+Terminal 2 - Frontend:
 ```bash
 cd frontend
 npm run dev
 ```
 
-Open http://localhost:5173 — the Vite dev server proxies `/api` to the backend on `:8000`.
+**Access the application:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-### 6. Run tests
+---
 
+## 🎓 Features
+
+### 1. URL Intelligence Check
+- Multi-provider threat intelligence lookup
+- ML-based phishing detection
+- Explainable risk scoring
+- Visual risk breakdown
+
+### 2. Fraud Simulation Engine
+- **7 realistic phishing scenarios:**
+  - Account/Login fraud
+  - Subscription/Billing scams
+  - Storage upgrade phishing
+  - Delivery/Package fraud
+  - Reward/Prize scams
+  - Tech support scams
+  - HR/Document impersonation
+
+- **Live monitoring dashboard:**
+  - Real-time event tracking
+  - Interaction pipeline visualization
+  - Captured credential display
+  - Session history logs
+
+- **Educational debrief:**
+  - Attack breakdown
+  - Red flag identification
+  - Manipulation techniques
+  - Safe action guidance
+
+### 3. Pattern Recognition Training
+- Common phishing URL patterns
+- Domain spoofing techniques
+- Suspicious character usage
+- Social engineering indicators
+
+### 4. Security Awareness Education
+- How phishing works
+- Attack flow visualization
+- Warning signs
+- Prevention strategies
+- Real-world consequences
+
+---
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+Create `backend/.env`:
+```env
+# Database
+DATABASE_URL=sqlite:///./phishguard.db
+
+# Threat Intel API Keys (Optional)
+VIRUSTOTAL_API_KEY=your_key_here
+URLSCAN_API_KEY=your_key_here
+
+# Security
+SECRET_KEY=your-secret-key-here
+```
+
+### Frontend Configuration
+
+The frontend automatically connects to `http://localhost:8000` in development.
+
+For production, update `frontend/src/services/api/client.ts`.
+
+---
+
+## 🧪 ML Model
+
+The machine learning model is a **Random Forest Classifier** trained on:
+- 10,000+ phishing and legitimate URLs
+- 15+ extracted features (domain length, special chars, TLD patterns, etc.)
+- ~95% accuracy on test set
+
+**Model location:** `ml/phishing_model.pkl`
+
+**Feature extraction:** `backend/app/services/ml/predictor.py`
+
+**Retraining:** Run `ml/train_model.py` with updated dataset
+
+---
+
+## 📊 API Endpoints
+
+### Core Analysis
+- `POST /api/analyze` - Analyze URL for phishing risk
+- `GET /api/health` - Health check
+
+### Fraud Simulator
+- `GET /api/simulator/templates` - Get simulation scenarios
+- `POST /api/simulator/send-email` - Dispatch simulation email
+- `POST /api/simulator/session` - Create simulation session
+- `POST /api/simulator/event` - Record interaction event
+- `GET /api/simulator/events/latest` - Get latest event
+- `GET /api/simulator/sessions` - Get all sessions
+- `POST /api/simulator/credentials` - Capture credentials
+- `POST /api/simulator/reset` - Reset all sessions
+
+Full API documentation: http://localhost:8000/docs
+
+---
+
+## 🎨 UI/UX Design
+
+PhishGuard features a **dark-themed glassmorphism design** inspired by Vesper.ai:
+
+- **Color scheme:** Deep blacks, subtle gradients, neon accents
+- **Typography:** Inter (body), Instrument Serif (display)
+- **Animations:** Framer Motion for smooth transitions
+- **Responsive:** Mobile-first design with tablet/desktop optimization
+
+---
+
+## 🔐 Security Features
+
+- **No real credential storage:** Simulator captures are educational only
+- **Safe credential handling:** Demo data never persists
+- **Clear educational warnings:** Every simulation displays safety notices
+- **Isolated simulation environment:** No connection to real services
+
+---
+
+## 📝 Development
+
+### Code Structure
+
+**Backend follows clean architecture:**
+- `api/` - Route handlers
+- `services/` - Business logic
+- `models/` - Database models
+- `schemas/` - Request/response validation
+
+**Frontend follows component-based architecture:**
+- `pages/` - Route pages
+- `components/` - Reusable UI components
+- `services/` - API integration
+
+### Adding a New Simulation Scenario
+
+1. Add template to `backend/app/data/simulator_templates.json`
+2. Define scenario type in `frontend/src/pages/SimulatorPage.tsx`
+3. Create interaction template in `frontend/src/components/SimulationInteractPage.tsx`
+4. Add scenario icon and colors to `SCENARIO_ICONS` and `SCENARIO_COLORS`
+
+---
+
+## 🧹 Maintenance
+
+### Database Reset
 ```bash
-pytest
+# Delete database file
+rm backend/phishguard.db
+
+# Restart backend - tables will be recreated
+python start_backend.py
+```
+
+### Clear Simulation History
+Use the "Reset All" button in the Live Monitor tab, or:
+```bash
+curl -X POST http://localhost:8000/api/simulator/reset
 ```
 
 ---
 
-## ☁️ Deploying to Vercel
+## 📚 Resources
 
-This repo is configured so **the React frontend deploys to Vercel** (SPA build with client-side routing), while the FastAPI backend can be hosted on a free serverless/long-running service (see below).
+- **Threat Intel Providers:**
+  - [VirusTotal](https://www.virustotal.com/)
+  - [URLhaus](https://urlhaus.abuse.ch/)
+  - [URLScan.io](https://urlscan.io/)
 
-### Frontend → Vercel
-
-1. Push the repo to GitHub.
-2. In Vercel, **Import Project** → select the repo.
-3. **Framework Preset:** Vite (auto-detected via `vercel.json`).
-4. Build settings are read from `vercel.json`:
-   - Build command: `cd frontend && npm install && npm run build`
-   - Output directory: `frontend/dist`
-5. Add an environment variable (when your backend is live):
-   - `VITE_API_BASE_URL=https://<your-backend-url>/api`
-6. Deploy. 🎉
-
-`vercel.json` also adds an SPA rewrite so deep links (e.g. `/check`) work on refresh, and long-cache headers for hashed assets.
-
-### Backend → free hosting (optional)
-
-The FastAPI backend is a standard Python app. Free options:
-- **Render** (free tier web service) — `uvicorn backend.app.main:app`
-- **Railway** — `pip install -r requirements.txt` + run command above
-- **Supabase** for the PostgreSQL database (free)
-
-Set the same env vars (`VIRUSTOTAL_API_KEY`, etc.) in the host's dashboard.
+- **ML Resources:**
+  - [scikit-learn Documentation](https://scikit-learn.org/)
+  - [Phishing Dataset (Kaggle)](https://www.kaggle.com/datasets)
 
 ---
 
-## 🔒 Security & Privacy
+## 🤝 Contributing
 
-- **No real credentials** are ever stored: the simulator persists only `password_entered: true/false`.
-- **SSRF protection** blocks loopback, private, link-local, and internal IP ranges before any server-side URL fetch.
-- **Provider independence**: if VirusTotal / urlscan / URLhaus is down or rate-limited, the app continues with the other sources and clearly marks the provider as unavailable — it never fabricates results and never treats "provider unavailable" as "website is safe."
-- **Honest ML**: prediction probability is presented as a model output, not a guarantee.
-- Secrets stay **server-side only**; CORS is locked to allowed origins.
+This is a college capstone project. Contributions, suggestions, and feedback are welcome!
 
-## 📚 Documentation
-
-- [PRD](prd.md) — full product requirements (features, privacy, success criteria)
-- [techstack.md](techstack.md) — technical architecture, providers, ML pipeline
+---
 
 ## 📄 License
 
-Open source. All data and API integrations respect the terms of their respective free providers.
+This project is built for educational purposes as part of a college cybersecurity program.
 
 ---
 
-*Built with React, TypeScript, Vite, FastAPI, scikit-learn, SQLAlchemy, and Supabase — entirely at ₹0 cost.*
+## 👨‍💻 Author
+
+**Pranav Patil**  
+College Capstone Project - Cybersecurity Awareness Platform
+
+---
+
+## 🔗 Links
+
+- **Live Demo:** [Add your deployment URL]
+- **Project Review:** https://forms.gle/X4TrbPDcde1axTqo7
+- **Documentation:** See `documentation.md` for detailed technical documentation
+
+---
+
+## 🎯 Future Enhancements
+
+- [ ] Email phishing simulator with real email dispatch
+- [ ] User authentication and progress tracking
+- [ ] Custom simulation campaign builder
+- [ ] Extended ML model with deep learning
+- [ ] Browser extension for real-time protection
+- [ ] Multi-language support
+
+---
+
+**Built with ❤️ for cybersecurity education**

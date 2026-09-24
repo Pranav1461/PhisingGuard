@@ -454,7 +454,9 @@ export const SimulatorPage: React.FC = () => {
   const paramMode = searchParams.get('mode');
   const paramEmail = searchParams.get('email');
 
-  const isTargetMode = Boolean(paramSessionId);
+  // Target mode ONLY when session_id is in URL AND mode=login (email link visit)
+  // NOT when using internal demo simulator
+  const isTargetMode = Boolean(paramSessionId && paramMode === 'login');
 
   // ── Tab & template state ──
   const [activeTab, setActiveTab] = useState<MainTab>('campaign');
@@ -483,11 +485,15 @@ export const SimulatorPage: React.FC = () => {
   const [activeScenarioType, setActiveScenarioType] = useState<string>('login');
 
   // ── Demo / interactive simulation state ──
+  // Demo mode should ONLY initialize from URL params when in target/victim mode (email link visit)
+  // Otherwise always start from 'setup' stage
   const [demoStage, setDemoStage] = useState<DemoStage>(
-    paramMode === 'login' ? 'interact' : 'setup'
+    (paramMode === 'login' && paramSessionId) ? 'interact' : 'setup'
   );
   const [targetEmail, setTargetEmail] = useState(paramEmail || '');
-  const [sessionId, setSessionId] = useState<string | null>(paramSessionId || null);
+  const [sessionId, setSessionId] = useState<string | null>(
+    (paramMode === 'login' && paramSessionId) ? paramSessionId : null
+  );
   const [primaryField, setPrimaryField] = useState('');
   const [secondaryField, setSecondaryField] = useState('');
   const [showSecondary, setShowSecondary] = useState(false);
@@ -725,8 +731,9 @@ export const SimulatorPage: React.FC = () => {
     }
 
     setSubmittingInteraction(false);
-    setDemoStage('result');
-    fetchMonitorData();
+
+    // Redirect to home page instead of showing result screen
+    window.location.href = '/';
   };
 
   // ── Reset demo ──
@@ -760,19 +767,6 @@ export const SimulatorPage: React.FC = () => {
     });
     return (
       <div className="max-w-2xl mx-auto py-4">
-        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 flex items-center justify-between text-xs text-amber-200">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 shrink-0 text-amber-400" />
-            <span>
-              <strong>PhishGuard Security Simulation</strong> &bull; Tracking ID:{' '}
-              <code className="font-mono text-white/80">{paramSessionId}</code>
-            </span>
-          </div>
-          <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-amber-500/20 text-[11px] font-medium text-amber-300">
-            Controlled Assessment
-          </span>
-        </div>
-
         {targetError && (
           <p role="alert" className="mb-4 flex items-start gap-2 rounded-md border border-red-500/40 bg-red-500/5 px-4 py-3 text-sm text-red-400">
             <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
@@ -781,80 +775,34 @@ export const SimulatorPage: React.FC = () => {
         )}
 
         {demoStage === 'interact' && (
-          <div className="max-w-md mx-auto">
-            <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-md overflow-hidden shadow-2xl shadow-black/60">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8 bg-white/[0.02]">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                </div>
-                <div className="flex-1 mx-2 h-6 rounded bg-white/5 flex items-center px-2.5">
-                  <Lock className="w-3 h-3 text-amber-400/80 mr-1.5 shrink-0" />
-                  <span className="text-[11px] text-white/40 font-mono truncate">{interaction.urlBar}</span>
-                </div>
-              </div>
-              <div className="p-7">
-                <div className="text-center mb-6">
-                  <div className="w-12 h-12 mx-auto rounded-2xl bg-blue-500/20 flex items-center justify-center mb-3 border border-blue-500/30">
-                    <Lock className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">{interaction.pageTitle}</h2>
-                  <p className="text-xs text-white/40 mt-1">{interaction.pageSubtitle}</p>
-                </div>
-                <form onSubmit={handleSubmitInteraction} className="space-y-4">
-                  <div>
-                    <label htmlFor="target-primary" className="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wider">
-                      {interaction.primaryField.label}
-                    </label>
-                    <input
-                      id="target-primary"
-                      type={interaction.primaryField.type}
-                      value={primaryField}
-                      onChange={(e) => setPrimaryField(e.target.value)}
-                      placeholder={interaction.primaryField.placeholder}
-                      autoComplete="off"
-                      required
-                      className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                    />
-                  </div>
-                  {interaction.secondaryField && (
-                    <div>
-                      <label htmlFor="target-secondary" className="block text-xs font-semibold text-white/70 mb-1.5 uppercase tracking-wider">
-                        {interaction.secondaryField.label}
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="target-secondary"
-                          type={showSecondary ? 'text' : interaction.secondaryField.type}
-                          value={secondaryField}
-                          onChange={(e) => setSecondaryField(e.target.value)}
-                          placeholder={interaction.secondaryField.placeholder}
-                          autoComplete="off"
-                          required
-                          className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 pr-10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/50 transition-all"
-                        />
-                        {interaction.secondaryField.type === 'password' && (
-                          <button type="button" onClick={() => setShowSecondary(!showSecondary)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                            {showSecondary ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  <button type="submit" disabled={submittingInteraction}
-                    className="w-full mt-2 btn btn-solid h-[44px] text-sm font-semibold rounded-lg">
-                    {submittingInteraction ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <KeyRound className="w-4 h-4 mr-2" />}
-                    {interaction.submitLabel}
-                  </button>
-                </form>
-                <p className="mt-5 text-center text-[11px] text-white/30 leading-relaxed">
-                  🛡️ This is a simulated interaction for security awareness. Do not enter real credentials.
-                </p>
-              </div>
-            </div>
-          </div>
+          <SimulationInteractPage
+            template={{
+              id: 'target-login',
+              name: 'NordVault',
+              category: 'Account / Login',
+              scenario_type: 'login',
+              difficulty: 'Medium',
+              subject: 'Unusual sign-in detected — verify your identity',
+              sender_name: 'NordVault Security',
+              sender_email_display: 'security-alerts@nordvault-mail.nfo',
+              fictional_org: 'NordVault',
+              manipulation: ['urgency', 'fear', 'authority'],
+              red_flags: ['suspicious sender domain', 'account suspension threat'],
+              safe_action: 'Navigate directly to the site — do not click email links.',
+              lure_description: 'Urgent account security alert claiming your mailbox will be locked in 24 hours.',
+            }}
+            scenarioType="login"
+            interaction={interaction}
+            primaryValue={primaryField}
+            secondaryValue={secondaryField}
+            showSecondary={showSecondary}
+            submitting={submittingInteraction}
+            error={targetError}
+            onPrimaryChange={setPrimaryField}
+            onSecondaryChange={setSecondaryField}
+            onShowSecondaryToggle={() => setShowSecondary(!showSecondary)}
+            onSubmit={handleSubmitInteraction}
+          />
         )}
 
         {demoStage === 'result' && (

@@ -15,7 +15,7 @@ import {
   Lock, Eye, EyeOff, Loader2, KeyRound, CreditCard, HardDrive,
   Gift, Headphones, FileText, ShieldCheck, AlertTriangle,
   MapPin, Clock, CheckCircle, Star,
-  Shield, Cloud, Truck, Trophy, Phone, FileSignature,
+  Shield, Cloud, Truck, Trophy, Phone, FileSignature, Mail,
 } from 'lucide-react';
 import type { SimulatorTemplateItem } from '../services/api/types';
 
@@ -115,73 +115,195 @@ const pageEntrance = {
 };
 
 // ─── 1. LOGIN ─────────────────────────────────────────────────────────────────
-// Visual language: clean security-service, shield motif, navy/slate palette.
+// Professional futuristic dark login with cyberpunk circuit board aesthetics
 
 function LoginSimulation(props: SimulationInteractPageProps) {
-  const { template, interaction, primaryValue, secondaryValue, showSecondary,
+  const { primaryValue, secondaryValue, showSecondary,
     submitting, onPrimaryChange, onSecondaryChange, onShowSecondaryToggle, onSubmit } = props;
-  const org = template.fictional_org || template.sender_name;
 
   return (
-    <motion.div {...pageEntrance}
-      className="min-h-[420px] flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-white/20 backdrop-blur-xl"
-      style={{ background: 'linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%)' }}>
-      <BrowserChrome url={interaction.urlBar} />
-      <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-10">
-        {/* Logo treatment */}
-        <div className="mb-6 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-xl flex items-center justify-center border border-black/5"
-            style={{ background: '#ffffff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-            <Shield className="w-7 h-7 text-blue-600" />
-          </div>
-          <p className="text-xs font-bold tracking-[0.1em] text-slate-500 uppercase mb-1">{org}</p>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">{interaction.pageTitle}</h2>
-          <p className="text-sm text-slate-500 mt-1">{interaction.pageSubtitle}</p>
-        </div>
-        {/* Form */}
-        <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
-          <FieldInput id="login-primary" label={interaction.primaryField.label}
-            field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus light />
-          {interaction.secondaryField && (
-            <FieldInput id="login-secondary" label={interaction.secondaryField.label}
-              field={interaction.secondaryField} value={secondaryValue}
-              show={showSecondary} onToggle={onShowSecondaryToggle}
-              onChange={onSecondaryChange} light />
-          )}
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="rounded border-slate-300 accent-blue-600" />
-              Remember this device
-            </label>
-            <button type="button" className="text-blue-600 hover:text-blue-700 transition-colors">
-              Forgot password?
-            </button>
-          </div>
-          <button type="submit" disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all shadow-md"
-            style={{ background: submitting ? '#334155' : '#1e293b' }}>
-            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-            {interaction.submitLabel}
-          </button>
-        </form>
-        {/* Divider & Social */}
-        <div className="mt-8 w-full max-w-sm">
-          <div className="relative flex py-5 items-center">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink mx-4 text-slate-400 text-xs">Or sign in with</span>
-            <div className="flex-grow border-t border-slate-200"></div>
-          </div>
-          <div className="flex gap-3 justify-center">
-            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
-            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
-            <button className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50"><Mail className="w-5 h-5 text-slate-600" /></button>
-          </div>
-        </div>
-        <p className="mt-8 text-[11px] text-slate-400 text-center max-w-xs leading-relaxed">
-          Protected by {org} Security · By signing in you agree to our Terms
-        </p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
+      style={{
+        background: 'radial-gradient(ellipse at center, #0A0A1A 0%, #000000 100%)',
+      }}>
+
+      {/* Background grid overlay */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }}
+      />
+
+      {/* Cyberpunk circuit decorations - top left */}
+      <svg className="absolute top-0 left-0 w-48 h-48 opacity-40" viewBox="0 0 200 200">
+        <path d="M20,20 L60,20 L60,60 M60,40 L100,40" stroke="#2A2A3A" strokeWidth="1" fill="none"/>
+        <circle cx="20" cy="20" r="3" fill="#2A2A3A"/>
+        <circle cx="60" cy="20" r="3" fill="#2A2A3A"/>
+        <circle cx="60" cy="60" r="3" fill="#2A2A3A"/>
+        <circle cx="100" cy="40" r="3" fill="#2A2A3A"/>
+        <rect x="18" y="18" width="4" height="4" fill="#2563EB" opacity="0.3">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3s" repeatCount="indefinite"/>
+        </rect>
+      </svg>
+
+      {/* Cyberpunk circuit decorations - top right */}
+      <svg className="absolute top-0 right-0 w-48 h-48 opacity-40" viewBox="0 0 200 200">
+        <path d="M180,20 L140,20 L140,60 M140,40 L100,40" stroke="#2A2A3A" strokeWidth="1" fill="none"/>
+        <circle cx="180" cy="20" r="3" fill="#2A2A3A"/>
+        <circle cx="140" cy="20" r="3" fill="#2A2A3A"/>
+        <circle cx="140" cy="60" r="3" fill="#2A2A3A"/>
+        <circle cx="100" cy="40" r="3" fill="#2A2A3A"/>
+      </svg>
+
+      {/* Cyberpunk circuit decorations - bottom left */}
+      <svg className="absolute bottom-0 left-0 w-48 h-48 opacity-40" viewBox="0 0 200 200">
+        <path d="M20,180 L60,180 L60,140 M60,160 L100,160" stroke="#2A2A3A" strokeWidth="1" fill="none"/>
+        <circle cx="20" cy="180" r="3" fill="#2A2A3A"/>
+        <circle cx="60" cy="180" r="3" fill="#2A2A3A"/>
+        <circle cx="60" cy="140" r="3" fill="#2A2A3A"/>
+        <circle cx="100" cy="160" r="3" fill="#2A2A3A"/>
+      </svg>
+
+      {/* Cyberpunk circuit decorations - bottom right */}
+      <svg className="absolute bottom-0 right-0 w-48 h-48 opacity-40" viewBox="0 0 200 200">
+        <path d="M180,180 L140,180 L140,140 M140,160 L100,160" stroke="#2A2A3A" strokeWidth="1" fill="none"/>
+        <circle cx="180" cy="180" r="3" fill="#2A2A3A"/>
+        <circle cx="140" cy="180" r="3" fill="#2A2A3A"/>
+        <circle cx="140" cy="140" r="3" fill="#2A2A3A"/>
+        <circle cx="100" cy="160" r="3" fill="#2A2A3A"/>
+        <rect x="178" y="178" width="4" height="4" fill="#2563EB" opacity="0.3">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite"/>
+        </rect>
+      </svg>
+
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-blue-500 rounded-full opacity-20"
+            style={{
+              left: `${Math.random() * 100}%`,
+              bottom: `-10px`,
+              animation: `float-${i} ${10 + Math.random() * 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
       </div>
-    </motion.div>
+
+      <style>{`
+        ${[...Array(15)].map((_, i) => `
+          @keyframes float-${i} {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 0.2; }
+            90% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); opacity: 0; }
+          }
+        `).join('')}
+      `}</style>
+
+      {/* Main card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md relative z-10">
+
+        <div
+          className="rounded-2xl p-8 transition-all duration-300"
+          style={{
+            background: 'transparent',
+            border: 'none',
+          }}>
+
+          {/* Logo with glow */}
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full" />
+              <Shield className="w-12 h-12 text-blue-500 relative z-10" />
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h1 className="text-2xl font-bold text-white text-center mb-8" style={{ letterSpacing: '0.5px' }}>
+            Welcome Back
+          </h1>
+
+          <form onSubmit={onSubmit} className="space-y-5">
+            {/* Email field */}
+            <div className="relative group/input">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within/input:text-blue-400 transition-colors z-10">
+                <Mail className="w-5 h-5" />
+              </div>
+              <input
+                type="email"
+                value={primaryValue}
+                onChange={(e) => onPrimaryChange(e.target.value)}
+                placeholder="Email address"
+                required
+                autoFocus
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none transition-all border-b-2 border-transparent focus:border-blue-500"
+                style={{
+                  background: '#0F0F1A',
+                }}
+              />
+            </div>
+
+            {/* Password field */}
+            <div className="relative group/input">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within/input:text-blue-400 transition-colors z-10">
+                <Lock className="w-5 h-5" />
+              </div>
+              <input
+                type={showSecondary ? 'text' : 'password'}
+                value={secondaryValue}
+                onChange={(e) => onSecondaryChange(e.target.value)}
+                placeholder="Password"
+                required
+                className="w-full pl-12 pr-12 py-3.5 rounded-xl text-sm text-white placeholder:text-gray-500 focus:outline-none transition-all border-b-2 border-transparent focus:border-blue-500"
+                style={{
+                  background: '#0F0F1A',
+                }}
+              />
+              <button
+                type="button"
+                onClick={onShowSecondaryToggle}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors z-10"
+              >
+                {showSecondary ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Login button */}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/50 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+              style={{
+                background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
+              }}>
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Login'
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className="mt-6 text-center text-xs text-gray-500">
+            🔒 Secured with end-to-end encryption
+          </p>
+
+          {/* Educational warning */}
+          <p className="mt-4 text-center text-[11px] text-gray-600 leading-relaxed border-t border-white/5 pt-4">
+            🛡️ This is a simulated interaction for security awareness. Do not enter real credentials.
+          </p>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -252,10 +374,10 @@ function SubscriptionSimulation(props: SimulationInteractPageProps) {
           <motion.div key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <div className="text-sm text-white/50 mb-2">{interaction.pageSubtitle}</div>
             <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="sub-primary" label={interaction.primaryField.label}
+              <FieldInput id="sub-primary"
                 field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
               {interaction.secondaryField && (
-                <FieldInput id="sub-secondary" label={interaction.secondaryField.label}
+                <FieldInput id="sub-secondary"
                   field={interaction.secondaryField} value={secondaryValue}
                   onChange={onSecondaryChange} />
               )}
