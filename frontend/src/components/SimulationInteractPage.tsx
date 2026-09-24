@@ -994,15 +994,17 @@ function RewardSimulation(props: SimulationInteractPageProps) {
                           <circle cx="20" cy="20" r="18" />
                         </clipPath>
                       </defs>
-                      <image
-                        href={prize.image}
-                        x={160 + 75 * Math.cos(midAngle) - 20}
-                        y={160 + 75 * Math.sin(midAngle) - 20}
-                        width="40"
-                        height="40"
-                        clipPath={`url(#prize-clip-${i})`}
-                        preserveAspectRatio="xMidYMid slice"
-                      />
+                      <g transform={`translate(${160 + 75 * Math.cos(midAngle) - 20}, ${160 + 75 * Math.sin(midAngle) - 20})`}>
+                        <image
+                          href={prize.image}
+                          x="0"
+                          y="0"
+                          width="40"
+                          height="40"
+                          clipPath={`url(#prize-clip-${i})`}
+                          preserveAspectRatio="xMidYMid slice"
+                        />
+                      </g>
 
                       {/* Prize text */}
                       <text
