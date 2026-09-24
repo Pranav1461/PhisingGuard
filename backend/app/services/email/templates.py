@@ -414,27 +414,27 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
         "generate_text": _text_generic("TuneWave Subscriptions", "Your TuneWave subscription ends tomorrow. Renew now to keep your playlists."),
     },
 
-    "gamesphere-refund": {
-        "id": "gamesphere-refund",
-        "name": "GameSphere — Refund Verification",
-        "category": "Subscription / Billing",
-        "scenario_type": "subscription",
-        "difficulty": "Hard",
-        "subject": "GameSphere: Refund of £49.99 requires your verification",
-        "sender_name": "GameSphere Refunds Team",
-        "sender_email_display": "refunds@gamesphere-billing.net",
-        "fictional_org": "GameSphere",
-        "manipulation": ["curiosity", "reward", "authority"],
-        "red_flags": ["unexpected refund for unknown charge", "billing subdomain", "verification required for refund"],
-        "safe_action": "Check your purchase history directly in GameSphere — legitimate refunds do not require clicking email links.",
-        "lure_description": "Simulates a refund verification email for a gaming subscription platform.",
-        "generate_html": _make_subscription_html(
-            "GameSphere",
-            "Refund Pending — Verification Required",
-            "We have initiated a refund of £49.99 for a recent GameSphere purchase. To process this refund to your original payment method, we require you to verify your identity before funds can be released.",
-            "Verify & Claim Refund"
+    "prizehub-spin-win": {
+        "id": "prizehub-spin-win",
+        "name": "PrizeHub — Spin & Win Reward",
+        "category": "Reward / Prize",
+        "scenario_type": "reward",
+        "difficulty": "Medium",
+        "subject": "PrizeHub: Congratulations! You won a prize — claim it now",
+        "sender_name": "PrizeHub Rewards Team",
+        "sender_email_display": "rewards@prizehub-claims.co",
+        "fictional_org": "PrizeHub",
+        "manipulation": ["curiosity", "reward", "urgency"],
+        "red_flags": ["unexpected prize notification", "suspicious domain", "payment required to claim free prize"],
+        "safe_action": "Ignore unsolicited prize notifications. Legitimate prizes never require payment or personal details to claim.",
+        "lure_description": "Simulates a spin-the-wheel prize notification requiring payment to claim a 'free' reward.",
+        "generate_html": _make_reward_html(
+            "PrizeHub",
+            "🎁 You're a Winner!",
+            "Congratulations! You've won an exclusive prize in our monthly giveaway. Spin our digital wheel to reveal your reward and claim it before it expires.",
+            "Spin & Claim Prize"
         ),
-        "generate_text": _text_generic("GameSphere Refunds", "A refund of £49.99 is pending. Verify your identity to receive it."),
+        "generate_text": _text_generic("PrizeHub Rewards", "You've won a prize! Spin the wheel to reveal and claim your reward."),
     },
 
     "cloudvault-billing": {
@@ -610,22 +610,22 @@ TEMPLATES: Dict[str, Dict[str, Any]] = {
         "generate_text": _text_generic("LoyaltyPlus Prize Team", "You have won a £500 shopping voucher. Claim within 24 hours."),
     },
 
-    "pointsmax-voucher": {
-        "id": "pointsmax-voucher",
-        "name": "PointsMax — Loyalty Points Expiring",
+    "cashback-wheel": {
+        "id": "cashback-wheel",
+        "name": "CashBack Central — Lucky Wheel Winner",
         "category": "Reward / Prize",
         "scenario_type": "reward",
         "difficulty": "Easy",
-        "subject": "PointsMax: Your 4,200 loyalty points expire in 24 hours",
-        "sender_name": "PointsMax Loyalty Programme",
-        "sender_email_display": "points@pointsmax-alerts.com",
-        "fictional_org": "PointsMax",
-        "manipulation": ["scarcity", "urgency", "fear"],
-        "red_flags": ["alerts-specific domain", "points expiry pressure", "redemption link in email"],
-        "safe_action": "Check and redeem loyalty points via the official PointsMax app — not via email links.",
-        "lure_description": "Simulates an expiring loyalty points alert to create urgency.",
-        "generate_html": _make_reward_html("PointsMax", "Expiring Loyalty Points", "4,200 Points (£42 value)", "Redeem Points Before Expiry"),
-        "generate_text": _text_generic("PointsMax Loyalty", "Your 4,200 PointsMax loyalty points expire in 24 hours. Redeem them now."),
+        "subject": "CashBack Central: Spin the wheel — you're today's lucky winner!",
+        "sender_name": "CashBack Central Promotions",
+        "sender_email_display": "winners@cashbackcentral-promo.net",
+        "fictional_org": "CashBack Central",
+        "manipulation": ["curiosity", "reward", "urgency"],
+        "red_flags": ["unsolicited prize notification", "promo-specific domain", "payment required to claim free prize"],
+        "safe_action": "Ignore unsolicited prize notifications. Legitimate prizes never require payment to claim.",
+        "lure_description": "Simulates a lucky wheel spin prize notification requiring payment to claim the reward.",
+        "generate_html": _make_reward_html("CashBack Central", "🎯 You're Today's Winner!", "Spin our exclusive wheel to reveal your prize", "Spin & Win Now"),
+        "generate_text": _text_generic("CashBack Central", "You've been selected as today's lucky winner! Spin the wheel to reveal your prize."),
     },
 
     # ── 6. SUPPORT / TECHNICAL SCAM ───────────────────────────────────────────

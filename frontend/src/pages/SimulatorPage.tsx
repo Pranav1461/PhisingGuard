@@ -43,6 +43,7 @@ import {
   recordSimulatorEvent,
   getLatestSimulatorEvent,
   getSimulatorSessions,
+  getSimulatorSession,
   resetSimulator,
   captureCredentials,
 } from '../services/api/simulator';
@@ -81,21 +82,13 @@ interface MonitorEvent {
 const SCENARIO_ICONS: Record<string, React.ElementType> = {
   login: Lock,
   subscription: CreditCard,
-  storage: HardDrive,
-  delivery: Package,
   reward: Gift,
-  support: Headphones,
-  document: FileText,
 };
 
 const SCENARIO_COLORS: Record<string, string> = {
   login:        'text-blue-400   border-blue-500/30   bg-blue-500/10',
   subscription: 'text-amber-400  border-amber-500/30  bg-amber-500/10',
-  storage:      'text-orange-400 border-orange-500/30 bg-orange-500/10',
-  delivery:     'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
   reward:       'text-purple-400 border-purple-500/30 bg-purple-500/10',
-  support:      'text-red-400    border-red-500/30    bg-red-500/10',
-  document:     'text-teal-400   border-teal-500/30   bg-teal-500/10',
 };
 
 // Per-scenario interaction field types (structure only — content comes from scenario data)
@@ -111,25 +104,9 @@ const SCENARIO_INTERACTION_FIELDS: Record<string, {
     primaryField: { label: 'Card Number', placeholder: '•••• •••• •••• ••••', type: 'text' },
     secondaryField: { label: 'Expiry / CVV', placeholder: 'MM/YY — 3-digit code', type: 'text' },
   },
-  storage: {
-    primaryField: { label: 'Account Email', placeholder: 'you@domain.com', type: 'text' },
-    secondaryField: { label: 'Account Password', placeholder: 'Confirm to authorise upgrade', type: 'password' },
-  },
-  delivery: {
-    primaryField: { label: 'Full Name', placeholder: 'Your full name', type: 'text' },
-    secondaryField: { label: 'Delivery Address', placeholder: 'House number, street, postcode', type: 'text' },
-  },
   reward: {
     primaryField: { label: 'Full Name', placeholder: 'Your full name', type: 'text' },
     secondaryField: { label: 'Bank Account / Sort Code', placeholder: 'For reward transfer', type: 'text' },
-  },
-  support: {
-    primaryField: { label: 'Account Email', placeholder: 'you@domain.com', type: 'text' },
-    secondaryField: { label: 'Account Password', placeholder: 'Required to verify ownership', type: 'password' },
-  },
-  document: {
-    primaryField: { label: 'Employee Email', placeholder: 'you@company.com', type: 'text' },
-    secondaryField: { label: 'Corporate Password', placeholder: 'Your network login password', type: 'password' },
   },
 };
 
@@ -398,11 +375,7 @@ const CATEGORY_FILTERS = [
   { key: 'all', label: 'All Scenarios', icon: Filter },
   { key: 'login', label: 'Account / Login', icon: Lock },
   { key: 'subscription', label: 'Subscription', icon: CreditCard },
-  { key: 'storage', label: 'Storage', icon: HardDrive },
-  { key: 'delivery', label: 'Delivery', icon: Package },
   { key: 'reward', label: 'Reward / Prize', icon: Gift },
-  { key: 'support', label: 'Support Scam', icon: Headphones },
-  { key: 'document', label: 'HR / Document', icon: FileText },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -504,6 +477,10 @@ export const SimulatorPage: React.FC = () => {
   // ── Active template for demo ──
   const [demoTemplate, setDemoTemplate] = useState<SimulatorTemplateItem | null>(null);
 
+  // ── State for target mode template lookup ──
+  const [targetTemplate, setTargetTemplate] = useState<SimulatorTemplateItem | null>(null);
+  const [targetTemplateLoading, setTargetTemplateLoading] = useState(false);
+
   const hasLoggedClickRef = useRef(false);
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -536,7 +513,39 @@ export const SimulatorPage: React.FC = () => {
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 2. Auto-record link_clicked in target/victim mode
+  // 2. Fetch the actual template when in target mode
+  // ─────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!isTargetMode || !paramSessionId || targetTemplate) return;
+
+    setTargetTemplateLoading(true);
+
+    // Fetch the session details to get the template_id
+    getSimulatorSession(paramSessionId)
+      .then((session) => {
+        const templateId = session.template_id || 'nordvault-security';
+        // Find the matching template
+        return getSimulatorTemplates().then((templates) => {
+          const tpl = templates.find(t => t.id === templateId);
+          if (tpl) {
+            setTargetTemplate(tpl);
+          } else {
+            // Fallback to first available template if not found
+            setTargetTemplate(templates[0] || FALLBACK_TEMPLATES[0]);
+          }
+          setTargetTemplateLoading(false);
+        });
+      })
+      .catch(() => {
+        // Fallback to default on error
+        setTargetTemplate(FALLBACK_TEMPLATES[0]);
+        setTargetTemplateLoading(false);
+      });
+  }, [isTargetMode, paramSessionId, targetTemplate]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 3. Auto-record link_clicked in target/victim mode
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -753,18 +762,25 @@ export const SimulatorPage: React.FC = () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   if (isTargetMode) {
-    const interaction = buildInteractionConfig({
-      id: 'target-login', name: 'NordVault', category: 'Account / Login',
-      scenario_type: 'login', difficulty: 'Medium',
-      subject: 'Unusual sign-in detected — verify your identity',
-      sender_name: 'NordVault Security',
-      sender_email_display: 'security-alerts@nordvault-mail.nfo',
-      fictional_org: 'NordVault',
-      manipulation: ['urgency', 'fear', 'authority'],
-      red_flags: ['suspicious sender domain', 'account suspension threat'],
-      safe_action: 'Navigate directly to the site — do not click email links.',
-      lure_description: 'Urgent account security alert claiming your mailbox will be locked in 24 hours.',
-    });
+    if (targetTemplateLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+        </div>
+      );
+    }
+
+    if (!targetTemplate) {
+      return (
+        <div className="max-w-2xl mx-auto py-4">
+          <p className="text-red-400">Session not found</p>
+        </div>
+      );
+    }
+
+    const targetScenarioType = getScenarioType(targetTemplate);
+    const interaction = buildInteractionConfig(targetTemplate);
+
     return (
       <div className="max-w-2xl mx-auto py-4">
         {targetError && (
@@ -776,22 +792,8 @@ export const SimulatorPage: React.FC = () => {
 
         {demoStage === 'interact' && (
           <SimulationInteractPage
-            template={{
-              id: 'target-login',
-              name: 'NordVault',
-              category: 'Account / Login',
-              scenario_type: 'login',
-              difficulty: 'Medium',
-              subject: 'Unusual sign-in detected — verify your identity',
-              sender_name: 'NordVault Security',
-              sender_email_display: 'security-alerts@nordvault-mail.nfo',
-              fictional_org: 'NordVault',
-              manipulation: ['urgency', 'fear', 'authority'],
-              red_flags: ['suspicious sender domain', 'account suspension threat'],
-              safe_action: 'Navigate directly to the site — do not click email links.',
-              lure_description: 'Urgent account security alert claiming your mailbox will be locked in 24 hours.',
-            }}
-            scenarioType="login"
+            template={targetTemplate}
+            scenarioType={targetScenarioType}
             interaction={interaction}
             primaryValue={primaryField}
             secondaryValue={secondaryField}

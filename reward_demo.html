@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reward Wheel Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0e1a;
+      --card-bg: #0d1225;
+      --accent: #8b5cf6;
+      --accent-dark: #6d28d9;
+      --text: #ffffff;
+      --text-muted: rgba(255,255,255,0.6);
+      --border: rgba(255,255,255,0.1);
+      --error: #ef4444;
+      --success: #10b981;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f8f9fa;
+        --card-bg: #ffffff;
+        --text: #1a1a1a;
+        --text-muted: rgba(0,0,0,0.6);
+        --border: rgba(0,0,0,0.1);
+      }
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: rgba(0,0,0,0.6);
+      --border: rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wheel-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 40px 0;
+    }
+
+    .pointer {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid #ef4444;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+      z-index: 10;
+    }
+
+    .wheel {
+      transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+
+    .spin-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 24px;
+    }
+
+    .spin-btn:hover:not(:disabled) { opacity: 0.9; }
+    .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.08);
+    }
+
+    input.error {
+      border-color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    input.valid {
+      border-color: var(--success);
+    }
+
+    .error-msg {
+      font-size: 11px;
+      color: var(--error);
+      margin-top: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .test-cards {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(139,92,246,0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(139,92,246,0.2);
+    }
+
+    .test-cards p {
+      font-size: 12px;
+      margin-bottom: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+
+    .test-cards strong {
+      color: var(--accent);
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Reward Wheel Demo</h1>
+    <p class="subtitle">Showcasing PhishGuard improvements: Circular wheel + Luhn validation</p>
+
+    <!-- Spinning Wheel -->
+    <div class="card">
+      <div class="section-title">
+        <span>🎡</span>
+        <span>Spin the Wheel</span>
+      </div>
+
+      <div class="wheel-container">
+        <div class="pointer"></div>
+        <svg width="320" height="320" viewBox="0 0 320 320" id="wheel" class="wheel">
+          <circle cx="160" cy="160" r="156" fill="none" stroke="rgba(139,92,246,0.6)" stroke-width="4" />
+
+          <!-- Prize segments will be added by JS -->
+
+          <!-- Center hub -->
+          <circle cx="160" cy="160" r="30" fill="url(#hubGradient)" />
+          <circle cx="160" cy="160" r="30" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
+
+          <defs>
+            <radialGradient id="hubGradient">
+              <stop offset="0%" stop-color="#a78bfa" />
+              <stop offset="100%" stop-color="#7c3aed" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <button id="spinBtn" class="spin-btn">
+        <span id="btnIcon">🎯</span>
+        <span id="btnText">SPIN</span>
+      </button>
+    </div>
+
+    <!-- Card Validation -->
+    <div class="card">
+      <div class="section-title">
+        <span>💳</span>
+        <span>Card Validation (Luhn Algorithm)</span>
+      </div>
+
+      <form id="cardForm">
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="off">
+          <div id="cardError" class="error-msg"></div>
+        </div>
+
+        <div class="grid">
+          <div class="form-group">
+            <label for="expiry">Expiry Date</label>
+            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" autocomplete="off">
+            <div id="expiryError" class="error-msg"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" placeholder="123" maxlength="4" autocomplete="off">
+          </div>
+        </div>
+      </form>
+
+      <div class="test-cards">
+        <p><strong>Test Cards:</strong></p>
+        <p>✅ Valid: 4532015112830366</p>
+        <p>✅ Valid: 5425233430109903</p>
+        <p>❌ Invalid: 1234567890123456</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Prize data with images
+    const prizes = [
+      { name: '$100', color: '#10b981', image: 'https://images.unsplash.com/photo-1607863680198-23d4b2565df0?w=100&h=100&fit=crop&q=80' },
+      { name: 'iPhone', color: '#3b82f6', image: 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=100&h=100&fit=crop&q=80' },
+      { name: 'Watch', color: '#8b5cf6', image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=100&h=100&fit=crop&q=80' },
+      { name: 'TV', color: '#f59e0b', image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=100&h=100&fit=crop&q=80' },
+      { name: 'Gift Card', color: '#ec4899', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=100&h=100&fit=crop&q=80' },
+      { name: 'Headphones', color: '#06b6d4', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&h=100&fit=crop&q=80' },
+      { name: 'Tablet', color: '#6366f1', image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=100&h=100&fit=crop&q=80' },
+      { name: '$250', color: '#14b8a6', image: 'https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?w=100&h=100&fit=crop&q=80' }
+    ];
+
+    // Draw wheel segments
+    const wheel = document.getElementById('wheel');
+    const degreesPerSegment = 360 / prizes.length;
+
+    prizes.forEach((prize, i) => {
+      const startAngle = (i * degreesPerSegment - 90) * Math.PI / 180;
+      const endAngle = ((i + 1) * degreesPerSegment - 90) * Math.PI / 180;
+      const midAngle = (startAngle + endAngle) / 2;
+
+      const x1 = 160 + 150 * Math.cos(startAngle);
+      const y1 = 160 + 150 * Math.sin(startAngle);
+      const x2 = 160 + 150 * Math.cos(endAngle);
+      const y2 = 160 + 150 * Math.sin(endAngle);
+
+      // Segment path
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M 160 160 L ${x1} ${y1} A 150 150 0 0 1 ${x2} ${y2} Z`);
+      path.setAttribute('fill', prize.color);
+      path.setAttribute('opacity', '0.95');
+      wheel.insertBefore(path, wheel.querySelector('circle:last-of-type'));
+
+      // Divider line
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', '160');
+      line.setAttribute('y1', '160');
+      line.setAttribute('x2', x1);
+      line.setAttribute('y2', y1);
+      line.setAttribute('stroke', 'rgba(255,255,255,0.25)');
+      line.setAttribute('stroke-width', '2');
+      wheel.insertBefore(line, wheel.querySelector('circle:last-of-type'));
+
+      // Prize image
+      const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+      clipPath.id = `clip-${i}`;
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', '20');
+      circle.setAttribute('cy', '20');
+      circle.setAttribute('r', '18');
+      clipPath.appendChild(circle);
+      wheel.querySelector('defs').appendChild(clipPath);
+
+      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', prize.image);
+      image.setAttribute('x', 160 + 75 * Math.cos(midAngle) - 20);
+      image.setAttribute('y', 160 + 75 * Math.sin(midAngle) - 20);
+      image.setAttribute('width', '40');
+      image.setAttribute('height', '40');
+      image.setAttribute('clip-path', `url(#clip-${i})`);
+      image.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      wheel.insertBefore(image, wheel.querySelector('circle:last-of-type'));
+
+      // Prize text
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', 160 + 115 * Math.cos(midAngle));
+      text.setAttribute('y', 160 + 115 * Math.sin(midAngle));
+      text.setAttribute('fill', 'white');
+      text.setAttribute('font-size', '10');
+      text.setAttribute('font-weight', 'bold');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('transform', `rotate(${(midAngle * 180 / Math.PI) + 90}, ${160 + 115 * Math.cos(midAngle)}, ${160 + 115 * Math.sin(midAngle)})`);
+      text.textContent = prize.name;
+      wheel.insertBefore(text, wheel.querySelector('circle:last-of-type'));
+    });
+
+    // Spin functionality
+    let rotation = 0;
+    let spinning = false;
+
+    document.getElementById('spinBtn').addEventListener('click', () => {
+      if (spinning) return;
+      spinning = true;
+
+      const btn = document.getElementById('spinBtn');
+      const btnIcon = document.getElementById('btnIcon');
+      const btnText = document.getElementById('btnText');
+
+      btnIcon.className = 'spinning';
+      btnText.textContent = 'SPINNING...';
+      btn.disabled = true;
+
+      const selectedIndex = Math.floor(Math.random() * prizes.length);
+      const targetRotation = rotation + 360 * 5 + (selectedIndex * degreesPerSegment);
+
+      wheel.style.transform = `rotate(${targetRotation}deg)`;
+      rotation = targetRotation % 360;
+
+      setTimeout(() => {
+        spinning = false;
+        btnIcon.className = '';
+        btnIcon.textContent = '🎉';
+        btnText.textContent = `WON: ${prizes[selectedIndex].name}`;
+        btn.disabled = false;
+
+        setTimeout(() => {
+          btnIcon.textContent = '🎯';
+          btnText.textContent = 'SPIN AGAIN';
+        }, 3000);
+      }, 4000);
+    });
+
+    // Luhn algorithm
+    function validateCardNumber(cardNum) {
+      const cleaned = cardNum.replace(/\s/g, '');
+      if (!/^\d+$/.test(cleaned) || cleaned.length < 13 || cleaned.length > 19) return false;
+
+      let sum = 0;
+      let isEven = false;
+
+      for (let i = cleaned.length - 1; i >= 0; i--) {
+        let digit = parseInt(cleaned[i]);
+
+        if (isEven) {
+          digit *= 2;
+          if (digit > 9) digit -= 9;
+        }
+
+        sum += digit;
+        isEven = !isEven;
+      }
+
+      return sum % 10 === 0;
+    }
+
+    function validateExpiryDate(expiry) {
+      const match = expiry.match(/^(\d{2})\/(\d{2})$/);
+      if (!match) return false;
+
+      const month = parseInt(match[1]);
+      const year = parseInt(match[2]) + 2000;
+
+      if (month < 1 || month > 12) return { valid: false, error: 'Invalid month' };
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      if (year < currentYear) return { valid: false, error: 'Card expired' };
+      if (year === currentYear && month < currentMonth) return { valid: false, error: 'Card expired' };
+
+      return { valid: true };
+    }
+
+    function formatCardNumber(value) {
+      const cleaned = value.replace(/\s/g, '');
+      const groups = cleaned.match(/.{1,4}/g);
+      return groups ? groups.join(' ') : cleaned;
+    }
+
+    // Card number input
+    const cardInput = document.getElementById('cardNumber');
+    const cardError = document.getElementById('cardError');
+
+    cardInput.addEventListener('input', (e) => {
+      const cleaned = e.target.value.replace(/[^\d\s]/g, '');
+      const digitsOnly = cleaned.replace(/\s/g, '').slice(0, 16);
+      const formatted = formatCardNumber(digitsOnly);
+      e.target.value = formatted;
+
+      if (digitsOnly.length === 0) {
+        cardError.textContent = '';
+        cardInput.classList.remove('error', 'valid');
+      } else if (digitsOnly.length < 13) {
+        cardError.textContent = '';
+        cardInput.classList.remove('error', 'valid');
+      } else if (!validateCardNumber(formatted)) {
+        cardError.textContent = 'Invalid card';
+        cardInput.classList.add('error');
+        cardInput.classList.remove('valid');
+      } else {
+        cardError.textContent = '';
+        cardInput.classList.remove('error');
+        cardInput.classList.add('valid');
+      }
+    });
+
+    // Expiry input
+    const expiryInput = document.getElementById('expiry');
+    const expiryError = document.getElementById('expiryError');
+
+    expiryInput.addEventListener('input', (e) => {
+      let cleaned = e.target.value.replace(/\D/g, '').slice(0, 4);
+      if (cleaned.length >= 2) {
+        cleaned = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+      }
+      e.target.value = cleaned;
+
+      if (cleaned.length === 0) {
+        expiryError.textContent = '';
+        expiryInput.classList.remove('error', 'valid');
+      } else if (cleaned.length < 5) {
+        expiryError.textContent = '';
+        expiryInput.classList.remove('error', 'valid');
+      } else {
+        const result = validateExpiryDate(cleaned);
+        if (!result.valid) {
+          expiryError.textContent = result.error;
+          expiryInput.classList.add('error');
+          expiryInput.classList.remove('valid');
+        } else {
+          expiryError.textContent = '';
+          expiryInput.classList.remove('error');
+          expiryInput.classList.add('valid');
+        }
+      }
+    });
+
+    // CVV input - only digits
+    const cvvInput = document.getElementById('cvv');
+    cvvInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    });
+  </script>
+</body>
+</html>

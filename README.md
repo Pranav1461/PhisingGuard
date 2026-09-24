@@ -130,14 +130,10 @@ npm run dev
 - Visual risk breakdown
 
 ### 2. Fraud Simulation Engine
-- **7 realistic phishing scenarios:**
-  - Account/Login fraud
-  - Subscription/Billing scams
-  - Storage upgrade phishing
-  - Delivery/Package fraud
-  - Reward/Prize scams
-  - Tech support scams
-  - HR/Document impersonation
+- **Interactive phishing scenarios:**
+  - Account/Login fraud with futuristic dark UI
+  - Subscription/Billing checkout with strict card (Luhn) validation algorithms
+  - Reward/Prize scams utilizing interactive "Spin the Wheel" mechanics with guaranteed prize logic and "transaction fee" traps
 
 - **Live monitoring dashboard:**
   - Real-time event tracking

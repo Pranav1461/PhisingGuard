@@ -27,7 +27,16 @@ router = APIRouter(prefix="/simulator", tags=["Phishing Simulator"])
 @router.get("/templates", response_model=List[SimulatorTemplateItem])
 async def get_simulator_templates():
     """Retrieve available phishing email scenarios and templates."""
-    return list_templates()
+    all_templates = list_templates()
+
+    # Filter to only include login, subscription, and reward scenarios
+    allowed_categories = ['Account / Login', 'Subscription / Billing', 'Reward / Prize']
+    filtered_templates = [
+        template for template in all_templates
+        if template.get('category') in allowed_categories
+    ]
+
+    return filtered_templates
 
 @router.post("/send-email", response_model=EmailDispatchResponse)
 async def dispatch_simulation_email(

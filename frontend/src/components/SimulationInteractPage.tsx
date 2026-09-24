@@ -50,21 +50,7 @@ interface SimulationInteractPageProps {
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
 
-function BrowserChrome({ url }: { url: string }) {
-  return (
-    <div className="flex items-center gap-2 px-3 py-2.5 bg-black/30 border-b border-white/8">
-      <div className="flex gap-1.5 shrink-0">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-      </div>
-      <div className="flex-1 flex items-center gap-1.5 min-w-0 bg-white/6 rounded px-2.5 py-1">
-        <Lock className="w-3 h-3 text-green-400 shrink-0" />
-        <span className="text-[11px] text-white/45 font-mono truncate">{url}</span>
-      </div>
-    </div>
-  );
-}
+// Removed BrowserChrome - clean UI without fake browser chrome
 
 function FieldInput({
   id, field, value, show, onToggle, onChange, autoFocus = false, light = false,
@@ -113,6 +99,91 @@ const pageEntrance = {
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.4, ease: 'easeOut' as const },
 };
+
+// ─── Shared card-payment helpers ───────────────────────────────────────────────
+
+type CardNetwork = 'visa' | 'mastercard' | 'amex' | 'discover' | 'rupay' | null;
+
+/** Detect card network from leading digits */
+function detectCardNetwork(digits: string): CardNetwork {
+  if (!digits) return null;
+  if (/^4/.test(digits)) return 'visa';
+  if (/^5[1-5]/.test(digits) || /^2(?:2[2-9]\d|2[3-9]\d|[3-6]\d{2}|7[01]\d|720)/.test(digits)) return 'mastercard';
+  if (/^3[47]/.test(digits)) return 'amex';
+  if (/^6(?:011|5)/.test(digits)) return 'discover';
+  if (/^(60|65|81|82|508)/.test(digits)) return 'rupay';
+  return null;
+}
+
+const CARD_LABELS: Record<CardNetwork & string, string> = {
+  visa: 'Visa', mastercard: 'Mastercard', amex: 'Amex', discover: 'Discover', rupay: 'RuPay',
+};
+
+/** Expected digit count per network */
+function expectedLength(net: CardNetwork): number { return net === 'amex' ? 15 : 16; }
+
+/** Luhn check */
+function luhn(digits: string): boolean {
+  let sum = 0, even = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let d = parseInt(digits[i]);
+    if (even) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+    even = !even;
+  }
+  return sum % 10 === 0;
+}
+
+/** Full card validation — returns error string or '' */
+function validateCard(formatted: string): string {
+  const digits = formatted.replace(/\s/g, '');
+  if (!digits) return '';
+  if (!/^\d+$/.test(digits)) return 'Digits only';
+  const net = detectCardNetwork(digits);
+  if (!net) return 'Unsupported card';
+  const need = expectedLength(net);
+  if (digits.length < need) return '';          // still typing
+  if (digits.length > need) return `${CARD_LABELS[net]} cards are ${need} digits`;
+  if (!luhn(digits)) return 'Invalid card number';
+  return '';
+}
+
+/** Format card number with spaces (4-4-4-4, or 4-6-5 for Amex) */
+function formatCard(value: string): string {
+  const d = value.replace(/\D/g, '');
+  if (detectCardNetwork(d) === 'amex') {
+    return [d.slice(0, 4), d.slice(4, 10), d.slice(10, 15)].filter(Boolean).join(' ');
+  }
+  const g = d.match(/.{1,4}/g);
+  return g ? g.join(' ') : d;
+}
+
+/** Is the card fully valid (right length + Luhn + known network)? */
+function isCardComplete(formatted: string): boolean {
+  const digits = formatted.replace(/\s/g, '');
+  const net = detectCardNetwork(digits);
+  return !!net && digits.length === expectedLength(net) && luhn(digits);
+}
+
+/** Validate MM/YY expiry — returns error string or '' */
+function validateExpiry(expiry: string): string {
+  if (!expiry) return '';
+  if (expiry.length < 5) return '';             // still typing
+  const m = expiry.match(/^(\d{2})\/(\d{2})$/);
+  if (!m) return 'Use MM/YY';
+  const month = parseInt(m[1]), year = parseInt(m[2]) + 2000;
+  if (month < 1 || month > 12) return 'Invalid month';
+  const now = new Date();
+  if (year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth() + 1)) return 'Card expired';
+  return '';
+}
+
+/** Auto-format expiry input */
+function formatExpiry(raw: string): string {
+  let d = raw.replace(/\D/g, '').slice(0, 4);
+  if (d.length >= 2) d = d.slice(0, 2) + '/' + d.slice(2);
+  return d;
+}
 
 // ─── 1. LOGIN ─────────────────────────────────────────────────────────────────
 // Professional futuristic dark login with cyberpunk circuit board aesthetics
@@ -308,7 +379,7 @@ function LoginSimulation(props: SimulationInteractPageProps) {
 }
 
 // ─── 2. SUBSCRIPTION / PAYMENT ────────────────────────────────────────────────
-// Visual language: SaaS billing flow, plan summary card, warm whites.
+// Realistic subscription checkout with product summary and payment form
 
 function SubscriptionSimulation(props: SimulationInteractPageProps) {
   const { template, interaction, primaryValue, secondaryValue,
@@ -316,16 +387,64 @@ function SubscriptionSimulation(props: SimulationInteractPageProps) {
   const org = template.fictional_org || template.sender_name;
   const [step, setStep] = useState<'plan' | 'payment'>('plan');
 
+  // Checkout state
+  const [cardholderName, setCardholderName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardError, setCardError] = useState('');
+  const [expiryError, setExpiryError] = useState('');
+
+  const cardNetwork = detectCardNetwork(cardNumber.replace(/\s/g, ''));
+  const maxCardLen = cardNetwork === 'amex' ? 17 : 19; // with spaces
+
+  function handleCardNumberChange(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, cardNetwork === 'amex' ? 15 : 16);
+    const formatted = formatCard(digits);
+    setCardNumber(formatted);
+    setCardError(validateCard(formatted));
+  }
+
+  function handleExpiryChange(value: string) {
+    const formatted = formatExpiry(value);
+    setExpiryDate(formatted);
+    setExpiryError(validateExpiry(formatted));
+  }
+
+  function handleCvvChange(value: string) {
+    setCvv(value.replace(/\D/g, '').slice(0, cardNetwork === 'amex' ? 4 : 3));
+  }
+
   function handleRenew() {
     onIntermediateEvent?.('payment_form_opened');
     setStep('payment');
+  }
+
+  function handleCheckoutSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const cErr = validateCard(cardNumber);
+    const eErr = validateExpiry(expiryDate);
+    if (cErr || !isCardComplete(cardNumber)) {
+      setCardError(cErr || 'Incomplete card number');
+      return;
+    }
+    if (eErr || expiryDate.length < 5) {
+      setExpiryError(eErr || 'Incomplete expiry');
+      return;
+    }
+    const reqCvv = cardNetwork === 'amex' ? 4 : 3;
+    if (cvv.length < reqCvv) return;
+
+    onPrimaryChange(cardNumber);
+    onSecondaryChange(`${expiryDate} / ${cvv}`);
+    onSubmit(e);
   }
 
   return (
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0e1622' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       <div className="p-6 sm:p-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -341,54 +460,129 @@ function SubscriptionSimulation(props: SimulationInteractPageProps) {
 
         {step === 'plan' && (
           <motion.div key="plan" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Current plan card */}
+            {/* Subscription product card */}
             <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Current Plan</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 uppercase">Active</span>
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Subscription</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 uppercase">Premium</span>
               </div>
-              <p className="text-xl font-bold text-white">{org} Premium</p>
-              <p className="text-sm text-white/50 mt-1">Your subscription requires attention</p>
-              <div className="mt-4 pt-4 border-t border-amber-500/10 flex items-center justify-between text-sm">
-                <span className="text-white/50">Billing issue detected</span>
-                <span className="text-amber-400 font-semibold">Action required</span>
+              <p className="text-xl font-bold text-white">{org} Premium Plan</p>
+              <p className="text-sm text-white/50 mt-1">Monthly subscription renewal</p>
+              <div className="mt-4 pt-4 border-t border-amber-500/10 flex items-center justify-between">
+                <span className="text-white/50 text-sm">Amount due</span>
+                <span className="text-2xl font-bold text-white">$12.99<span className="text-sm text-white/50">/mo</span></span>
               </div>
             </div>
             {/* Warning */}
             <div className="flex gap-3 rounded-lg border border-red-500/20 bg-red-500/8 p-4">
               <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <p className="text-sm text-white/70 leading-relaxed">
-                Your payment method could not be charged. Update your details to continue your subscription.
+                Your payment method could not be charged. Update your billing details to continue your subscription.
               </p>
             </div>
             <button type="button" onClick={handleRenew}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 4px 14px rgba(245,158,11,0.3)' }}>
               <CreditCard className="w-4 h-4" />
-              Update Payment Details
+              Update Payment Method
             </button>
           </motion.div>
         )}
 
         {step === 'payment' && (
-          <motion.div key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div className="text-sm text-white/50 mb-2">{interaction.pageSubtitle}</div>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="sub-primary"
-                field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
-              {interaction.secondaryField && (
-                <FieldInput id="sub-secondary"
-                  field={interaction.secondaryField} value={secondaryValue}
-                  onChange={onSecondaryChange} />
-              )}
+          <motion.div key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
+            {/* Product summary */}
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-white/70">{org} Premium</span>
+                <span className="text-white font-semibold">$12.99/mo</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleCheckoutSubmit} className="space-y-4">
+              {/* Cardholder Name */}
+              <div>
+                <label htmlFor="cardholder-name" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                  Cardholder Name
+                </label>
+                <input
+                  id="cardholder-name"
+                  type="text"
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                  placeholder="John Smith"
+                  required
+                  autoFocus
+                  className="w-full rounded-lg border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all"
+                />
+              </div>
+
+              {/* Card Number */}
+              <div>
+                <label htmlFor="card-number" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                  Card Number
+                </label>
+                <input
+                  id="card-number"
+                  type="text"
+                  value={cardNumber}
+                  onChange={(e) => handleCardNumberChange(e.target.value)}
+                  placeholder="1234 5678 9012 3456"
+                  required
+                  maxLength={maxCardLen}
+                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:bg-white/8 transition-all font-mono ${
+                    cardError ? 'border-red-500/60 bg-red-500/10' : 'border-white/12 bg-white/6 focus:border-white/30'
+                  }`}
+                />
+                {cardError && <p className="text-xs text-red-400 mt-1">{cardError}</p>}
+              </div>
+
+              {/* Expiry and CVV */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="expiry" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                    Expiry Date
+                  </label>
+                  <input
+                    id="expiry"
+                    type="text"
+                    value={expiryDate}
+                    onChange={(e) => handleExpiryChange(e.target.value)}
+                    placeholder="MM/YY"
+                    required
+                    maxLength={5}
+                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:bg-white/8 transition-all font-mono ${
+                      expiryError ? 'border-red-500/60 bg-red-500/10' : 'border-white/12 bg-white/6 focus:border-white/30'
+                    }`}
+                  />
+                  {expiryError && <p className="text-xs text-red-400 mt-1">{expiryError}</p>}
+                </div>
+                <div>
+                  <label htmlFor="cvv" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                    CVV
+                  </label>
+                  <input
+                    id="cvv"
+                    type="text"
+                    value={cvv}
+                    onChange={(e) => handleCvvChange(e.target.value)}
+                    placeholder="123"
+                    required
+                    maxLength={4}
+                    className="w-full rounded-lg border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
               <p className="text-[11px] text-white/30 flex items-center gap-1.5">
                 <Lock className="w-3 h-3" /> Payments secured by {org} Protect
               </p>
+
               <button type="submit" disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
                 style={{ background: submitting ? 'rgba(245,158,11,0.4)' : 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: submitting ? 'none' : '0 4px 14px rgba(245,158,11,0.3)' }}>
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                {interaction.submitLabel}
+                {submitting ? 'Processing...' : `Pay $12.99`}
               </button>
             </form>
           </motion.div>
@@ -423,7 +617,7 @@ function StorageSimulation(props: SimulationInteractPageProps) {
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0c1520' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center"
@@ -522,7 +716,7 @@ function DeliverySimulation(props: SimulationInteractPageProps) {
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0c1520' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center"
@@ -604,24 +798,117 @@ function DeliverySimulation(props: SimulationInteractPageProps) {
 }
 
 // ─── 5. REWARD / PRIZE ───────────────────────────────────────────────────────
-// Visual language: prize card, restrained gold accent, claim countdown.
+// Spin the Wheel → Prize Won → Claim Reward → Transaction Fees Payment
 
 function RewardSimulation(props: SimulationInteractPageProps) {
   const { template, interaction, primaryValue, secondaryValue,
     submitting, onPrimaryChange, onSecondaryChange, onSubmit, onIntermediateEvent } = props;
   const org = template.fictional_org || template.sender_name;
-  const [step, setStep] = useState<'prize' | 'claim'>('prize');
+  const [step, setStep] = useState<'wheel' | 'won' | 'payment'>('wheel');
+  const [spinning, setSpinning] = useState(false);
+  const [wonPrize, setWonPrize] = useState<{ name: string; image: string } | null>(null);
+  const [rotation, setRotation] = useState(0);
 
-  function handleClaim() {
+  // Checkout state with validation
+  const [cardholderName, setCardholderName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardError, setCardError] = useState('');
+  const [expiryError, setExpiryError] = useState('');
+
+  // Prize options with high-quality images
+  const prizes = [
+    { name: '$100 Cash', image: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=400&h=400&fit=crop&q=90', color: '#10b981' },
+    { name: 'iPhone 15 Pro', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&q=90', color: '#3b82f6' },
+    { name: 'Smart Watch', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=90', color: '#8b5cf6' },
+    { name: '65" 4K TV', image: 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&h=400&fit=crop&q=90', color: '#f59e0b' },
+    { name: '$200 Gift Card', image: 'https://images.unsplash.com/photo-1606741965326-cb990ae01bb2?w=400&h=400&fit=crop&q=90', color: '#ec4899' },
+    { name: 'AirPods Pro', image: 'https://images.unsplash.com/photo-1606841837239-c5a1a4a07af7?w=400&h=400&fit=crop&q=90', color: '#06b6d4' },
+    { name: 'iPad Pro', image: 'https://images.unsplash.com/photo-1585790050230-5dd28404f28c?w=400&h=400&fit=crop&q=90', color: '#6366f1' },
+    { name: '$500 Cash', image: 'https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?w=400&h=400&fit=crop&q=90', color: '#14b8a6' },
+  ];
+
+  const cardNetwork = detectCardNetwork(cardNumber.replace(/\s/g, ''));
+  const maxCardLen = cardNetwork === 'amex' ? 17 : 19;
+
+  function handleCardNumberChange(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, cardNetwork === 'amex' ? 15 : 16);
+    const formatted = formatCard(digits);
+    setCardNumber(formatted);
+    setCardError(validateCard(formatted));
+  }
+
+  function handleExpiryChange(value: string) {
+    const formatted = formatExpiry(value);
+    setExpiryDate(formatted);
+    setExpiryError(validateExpiry(formatted));
+  }
+
+  function handleCvvChange(value: string) {
+    setCvv(value.replace(/\D/g, '').slice(0, cardNetwork === 'amex' ? 4 : 3));
+  }
+
+  function handleSpin() {
+    if (spinning) return;
+    setSpinning(true);
+    onIntermediateEvent?.('reward_viewed');
+
+    // 1. Pick prize first, then rig the wheel to land on it
+    const selectedIndex = Math.floor(Math.random() * prizes.length);
+    const prize = prizes[selectedIndex];
+
+    // 2. Calculate rotation so the pointer (top / 12 o'clock) lands on
+    //    the center of segment `selectedIndex`.
+    //    Segments are drawn starting at -90° (top), each 45° wide CW.
+    //    Segment i's midpoint sits at i*45° clockwise from the top.
+    //    Rotating the wheel CW by (360 - i*45) brings that midpoint
+    //    back under the pointer. Add 5 full spins for visual effect
+    //    and a small random jitter so it doesn't always hit dead-center.
+    const seg = 360 / prizes.length;                       // 45°
+    const jitter = (Math.random() - 0.5) * (seg * 0.6);   // ±~13°
+    const targetRotation = 360 * 5 + (360 - selectedIndex * seg) + jitter;
+
+    setRotation(targetRotation);
+
+    setTimeout(() => {
+      // 3. Set wonPrize using the EXACT prize object selected above
+      setWonPrize(prize);
+      setSpinning(false);
+      setStep('won');
+    }, 4000);
+  }
+
+  function handleClaimReward() {
     onIntermediateEvent?.('claim_cta_clicked');
-    setStep('claim');
+    setStep('payment');
+  }
+
+  function handlePaymentSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const cErr = validateCard(cardNumber);
+    const eErr = validateExpiry(expiryDate);
+    if (cErr || !isCardComplete(cardNumber)) {
+      setCardError(cErr || 'Incomplete card number');
+      return;
+    }
+    if (eErr || expiryDate.length < 5) {
+      setExpiryError(eErr || 'Incomplete expiry');
+      return;
+    }
+    const reqCvv = cardNetwork === 'amex' ? 4 : 3;
+    if (cvv.length < reqCvv) return;
+
+    onPrimaryChange(cardNumber);
+    onSecondaryChange(`${expiryDate} / ${cvv}`);
+    onSubmit(e);
   }
 
   return (
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0d1225' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center"
@@ -634,53 +921,325 @@ function RewardSimulation(props: SimulationInteractPageProps) {
           </div>
         </div>
 
-        {step === 'prize' && (
-          <motion.div key="prize" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-            {/* Prize card */}
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="rounded-xl p-6 text-center relative overflow-hidden"
-              style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.2),rgba(109,40,217,0.15))', border: '1px solid rgba(139,92,246,0.3)' }}>
-              <div className="flex justify-center gap-1 mb-4">
+        {/* Step 1: Spin the Wheel */}
+        {step === 'wheel' && (
+          <motion.div key="wheel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            <div className="text-center space-y-2">
+              <div className="flex justify-center gap-1 mb-3">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <p className="text-xs text-purple-300/60 uppercase tracking-wider mb-2">You've been selected</p>
-              <p className="text-3xl font-bold text-white mb-1">{template.lure_description?.split(' ').slice(0, 4).join(' ') || 'Special Reward'}</p>
-              <p className="text-sm text-white/50 mt-2">{interaction.pageSubtitle}</p>
-              <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 text-red-300 text-xs font-semibold">
-                <Clock className="w-3.5 h-3.5" />
-                Expires in 48 hours
+              <p className="text-xs text-purple-300/60 uppercase tracking-wider">Congratulations!</p>
+              <p className="text-2xl font-bold text-white">You've Won a Prize!</p>
+              <p className="text-sm text-white/50">Spin the wheel to reveal your reward</p>
+            </div>
+
+            {/* Circular Wheel Container */}
+            <div className="relative flex items-center justify-center py-8">
+              {/* Pointer/Arrow at top */}
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+                <div className="w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-red-500"
+                  style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }} />
               </div>
-            </motion.div>
-            <button type="button" onClick={handleClaim}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all"
-              style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', boxShadow: '0 4px 14px rgba(139,92,246,0.4)' }}>
-              <Gift className="w-4 h-4" />
-              Claim Your Reward
+
+              {/* Spinning Wheel - Clean SVG Circle */}
+              <svg
+                width="320"
+                height="320"
+                viewBox="0 0 320 320"
+                className="drop-shadow-2xl"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                  transition: spinning ? 'transform 4000ms cubic-bezier(0.17, 0.67, 0.12, 0.99)' : 'none',
+                }}>
+
+                {/* Outer border */}
+                <circle cx="160" cy="160" r="156" fill="none" stroke="rgba(139,92,246,0.6)" strokeWidth="4" />
+
+                {/* Prize segments - smooth circular arcs */}
+                {prizes.map((prize, i) => {
+                  const degreesPerSegment = 360 / prizes.length;
+                  const startAngle = (i * degreesPerSegment - 90) * Math.PI / 180;
+                  const endAngle = ((i + 1) * degreesPerSegment - 90) * Math.PI / 180;
+                  const midAngle = (startAngle + endAngle) / 2;
+
+                  const x1 = 160 + 150 * Math.cos(startAngle);
+                  const y1 = 160 + 150 * Math.sin(startAngle);
+                  const x2 = 160 + 150 * Math.cos(endAngle);
+                  const y2 = 160 + 150 * Math.sin(endAngle);
+
+                  return (
+                    <g key={i}>
+                      {/* Segment - proper circular arc path */}
+                      <path
+                        d={`M 160 160 L ${x1} ${y1} A 150 150 0 0 1 ${x2} ${y2} Z`}
+                        fill={prize.color}
+                        opacity="0.95"
+                      />
+
+                      {/* Divider line */}
+                      <line
+                        x1="160"
+                        y1="160"
+                        x2={x1}
+                        y2={y1}
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeWidth="2"
+                      />
+
+                      {/* Prize image with proper clipping */}
+                      <defs>
+                        <clipPath id={`prize-clip-${i}`}>
+                          <circle cx="20" cy="20" r="18" />
+                        </clipPath>
+                      </defs>
+                      <image
+                        href={prize.image}
+                        x={160 + 75 * Math.cos(midAngle) - 20}
+                        y={160 + 75 * Math.sin(midAngle) - 20}
+                        width="40"
+                        height="40"
+                        clipPath={`url(#prize-clip-${i})`}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+
+                      {/* Prize text */}
+                      <text
+                        x={160 + 115 * Math.cos(midAngle)}
+                        y={160 + 115 * Math.sin(midAngle)}
+                        fill="white"
+                        fontSize="10"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        transform={`rotate(${(midAngle * 180 / Math.PI) + 90}, ${160 + 115 * Math.cos(midAngle)}, ${160 + 115 * Math.sin(midAngle)})`}>
+                        {prize.name}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* Center hub */}
+                <circle cx="160" cy="160" r="30" fill="url(#hubGradient)" />
+                <circle cx="160" cy="160" r="30" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="3" />
+
+                <defs>
+                  <radialGradient id="hubGradient">
+                    <stop offset="0%" stopColor="#a78bfa" />
+                    <stop offset="100%" stopColor="#7c3aed" />
+                  </radialGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSpin}
+              disabled={spinning}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg text-base font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
+              style={{
+                background: spinning ? 'rgba(139,92,246,0.4)' : 'linear-gradient(135deg,#8b5cf6,#6d28d9)',
+                boxShadow: spinning ? 'none' : '0 6px 20px rgba(139,92,246,0.5)'
+              }}>
+              {spinning ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Spinning...
+                </>
+              ) : (
+                <>
+                  <Trophy className="w-5 h-5" />
+                  SPIN
+                </>
+              )}
             </button>
           </motion.div>
         )}
 
-        {step === 'claim' && (
-          <motion.div key="claim" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <p className="text-sm text-white/50">Verify your identity to process the transfer.</p>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="rew-primary" label={interaction.primaryField.label}
-                field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
-              {interaction.secondaryField && (
-                <FieldInput id="rew-secondary" label={interaction.secondaryField.label}
-                  field={interaction.secondaryField} value={secondaryValue}
-                  onChange={onSecondaryChange} />
-              )}
+        {/* Step 2: Prize Won */}
+        {step === 'won' && wonPrize && (
+          <motion.div
+            key="won"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6">
+            {/* Celebration */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center space-y-4">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-2xl">
+                <Trophy className="w-10 h-10 text-white" />
+              </motion.div>
+
+              <div>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-xs text-purple-300/70 uppercase tracking-wider mb-2">
+                  Congratulations!
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-3xl font-bold text-white mb-2">
+                  You Won!
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl border-2 border-purple-400 bg-purple-500/20">
+                  <img
+                    src={wonPrize.image}
+                    alt={wonPrize.name}
+                    className="w-12 h-12 rounded-lg object-cover"
+                  />
+                  <span className="text-xl font-bold text-white">{wonPrize.name}</span>
+                </motion.div>
+              </div>
+
+              <p className="text-sm text-white/60 max-w-sm mx-auto">
+                Complete the verification process to claim your prize
+              </p>
+            </motion.div>
+
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              type="button"
+              onClick={handleClaimReward}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg text-base font-bold text-white transition-all hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', boxShadow: '0 6px 20px rgba(139,92,246,0.5)' }}>
+              <Gift className="w-5 h-5" />
+              CLAIM REWARD
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Step 3: Transaction Fees Payment */}
+        {step === 'payment' && (
+          <motion.div key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
+            {/* Header for payment step */}
+            <div className="text-center pb-4 border-b border-white/10">
+              <h3 className="text-xl font-bold text-white mb-1">Transaction Fees For Reward</h3>
+              <p className="text-sm text-white/50">A small processing fee is required to transfer your prize</p>
+            </div>
+
+            {/* Prize reminder with image */}
+            <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={wonPrize.image}
+                    alt={wonPrize.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-white">{wonPrize.name}</p>
+                    <p className="text-xs text-white/50">Your prize</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-white">$4.99</p>
+                  <p className="text-xs text-white/40">Processing fee</p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handlePaymentSubmit} className="space-y-4">
+              {/* Cardholder Name */}
+              <div>
+                <label htmlFor="reward-cardholder" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                  Cardholder Name
+                </label>
+                <input
+                  id="reward-cardholder"
+                  type="text"
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                  placeholder="John Smith"
+                  required
+                  autoFocus
+                  className="w-full rounded-lg border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all"
+                />
+              </div>
+
+              {/* Card Number */}
+              <div>
+                <label htmlFor="reward-card" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                  Card Number
+                </label>
+                <input
+                  id="reward-card"
+                  type="text"
+                  value={cardNumber}
+                  onChange={(e) => handleCardNumberChange(e.target.value)}
+                  placeholder="1234 5678 9012 3456"
+                  required
+                  maxLength={maxCardLen}
+                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:bg-white/8 transition-all font-mono ${
+                    cardError ? 'border-red-500/60 bg-red-500/10' : 'border-white/12 bg-white/6 focus:border-white/30'
+                  }`}
+                />
+                {cardError && <p className="text-xs text-red-400 mt-1">{cardError}</p>}
+              </div>
+
+              {/* Expiry and CVV */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="reward-expiry" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                    Expiry Date
+                  </label>
+                  <input
+                    id="reward-expiry"
+                    type="text"
+                    value={expiryDate}
+                    onChange={(e) => handleExpiryChange(e.target.value)}
+                    placeholder="MM/YY"
+                    required
+                    maxLength={5}
+                    className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:bg-white/8 transition-all font-mono ${
+                      expiryError ? 'border-red-500/60 bg-red-500/10' : 'border-white/12 bg-white/6 focus:border-white/30'
+                    }`}
+                  />
+                  {expiryError && <p className="text-xs text-red-400 mt-1">{expiryError}</p>}
+                </div>
+                <div>
+                  <label htmlFor="reward-cvv" className="block text-xs font-semibold text-white/60 mb-1.5 uppercase tracking-wider">
+                    CVV
+                  </label>
+                  <input
+                    id="reward-cvv"
+                    type="text"
+                    value={cvv}
+                    onChange={(e) => handleCvvChange(e.target.value)}
+                    placeholder="123"
+                    required
+                    maxLength={4}
+                    className="w-full rounded-lg border border-white/12 bg-white/6 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all font-mono"
+                  />
+                </div>
+              </div>
+
+              <p className="text-[11px] text-white/30 flex items-center gap-1.5">
+                <Lock className="w-3 h-3" /> Secure payment processing
+              </p>
+
               <button type="submit" disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
                 style={{ background: submitting ? 'rgba(139,92,246,0.4)' : 'linear-gradient(135deg,#8b5cf6,#6d28d9)', boxShadow: submitting ? 'none' : '0 4px 14px rgba(139,92,246,0.4)' }}>
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trophy className="w-4 h-4" />}
-                {interaction.submitLabel}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                {submitting ? 'Processing...' : 'Pay $4.99 & Claim Prize'}
               </button>
             </form>
           </motion.div>
@@ -710,7 +1269,7 @@ function SupportSimulation(props: SimulationInteractPageProps) {
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0c1018' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       {/* Alert bar */}
       <div className="flex items-center gap-3 px-5 py-3 bg-red-950/80 border-b border-red-500/20">
         <div className="w-7 h-7 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
@@ -805,7 +1364,7 @@ function DocumentSimulation(props: SimulationInteractPageProps) {
     <motion.div {...pageEntrance}
       className="rounded-xl overflow-hidden shadow-2xl shadow-black/50"
       style={{ background: '#0c1420' }}>
-      <BrowserChrome url={interaction.urlBar} />
+      
       <div className="p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-9 h-9 rounded-lg flex items-center justify-center"
