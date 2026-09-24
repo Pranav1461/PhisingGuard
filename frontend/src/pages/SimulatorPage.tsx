@@ -7,14 +7,12 @@ import {
   Radio,
   Activity,
   ShieldAlert,
-  KeyRound,
   Sliders,
   CheckCircle2,
   Clock,
   Copy,
   ExternalLink,
   Eye,
-  EyeOff,
   RotateCcw,
   Sparkles,
   AlertTriangle,
@@ -25,12 +23,8 @@ import {
   Layers,
   Inbox,
   Check,
-  Package,
   CreditCard,
-  HardDrive,
   Gift,
-  Headphones,
-  FileText,
   Search,
   Filter,
   BookOpen,
@@ -115,7 +109,6 @@ function buildInteractionConfig(tpl: SimulatorTemplateItem) {
   const st = getScenarioType(tpl);
   const fields = SCENARIO_INTERACTION_FIELDS[st] ?? SCENARIO_INTERACTION_FIELDS['login'];
   const org = tpl.fictional_org || tpl.sender_name;
-  const senderDisplay = tpl.sender_email_display;
 
   // Scenario-specific URL bars (fictional domains from templates)
   const urlBarMap: Record<string, string> = {

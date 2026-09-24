@@ -12,7 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Lock, Eye, EyeOff, Loader2, KeyRound, CreditCard, HardDrive,
+  Lock, Eye, EyeOff, Loader2, CreditCard, HardDrive,
   Gift, Headphones, FileText, ShieldCheck, AlertTriangle,
   MapPin, Clock, CheckCircle, Star,
   Shield, Cloud, Truck, Trophy, Phone, FileSignature, Mail,
@@ -382,7 +382,7 @@ function LoginSimulation(props: SimulationInteractPageProps) {
 // Realistic subscription checkout with product summary and payment form
 
 function SubscriptionSimulation(props: SimulationInteractPageProps) {
-  const { template, interaction, primaryValue, secondaryValue,
+  const { template, interaction,
     submitting, onPrimaryChange, onSecondaryChange, onSubmit, onIntermediateEvent } = props;
   const org = template.fictional_org || template.sender_name;
   const [step, setStep] = useState<'plan' | 'payment'>('plan');
@@ -667,10 +667,10 @@ function StorageSimulation(props: SimulationInteractPageProps) {
           <motion.div key="upgrade" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <p className="text-sm text-white/50">{interaction.pageSubtitle}</p>
             <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="sto-primary" label={interaction.primaryField.label}
+              <FieldInput id="sto-primary"
                 field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
               {interaction.secondaryField && (
-                <FieldInput id="sto-secondary" label={interaction.secondaryField.label}
+                <FieldInput id="sto-secondary"
                   field={interaction.secondaryField} value={secondaryValue}
                   show={showSecondary} onToggle={onShowSecondaryToggle}
                   onChange={onSecondaryChange} />
@@ -776,10 +776,10 @@ function DeliverySimulation(props: SimulationInteractPageProps) {
           <motion.div key="addr" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <p className="text-sm text-white/50">{interaction.pageSubtitle}</p>
             <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="del-primary" label={interaction.primaryField.label}
+              <FieldInput id="del-primary"
                 field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
               {interaction.secondaryField && (
-                <FieldInput id="del-secondary" label={interaction.secondaryField.label}
+                <FieldInput id="del-secondary"
                   field={interaction.secondaryField} value={secondaryValue}
                   onChange={onSecondaryChange} />
               )}
@@ -801,7 +801,7 @@ function DeliverySimulation(props: SimulationInteractPageProps) {
 // Spin the Wheel → Prize Won → Claim Reward → Transaction Fees Payment
 
 function RewardSimulation(props: SimulationInteractPageProps) {
-  const { template, interaction, primaryValue, secondaryValue,
+  const { template, interaction,
     submitting, onPrimaryChange, onSecondaryChange, onSubmit, onIntermediateEvent } = props;
   const org = template.fictional_org || template.sender_name;
   const [step, setStep] = useState<'wheel' | 'won' | 'payment'>('wheel');
@@ -1129,7 +1129,7 @@ function RewardSimulation(props: SimulationInteractPageProps) {
         )}
 
         {/* Step 3: Transaction Fees Payment */}
-        {step === 'payment' && (
+        {step === 'payment' && wonPrize && (
           <motion.div key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
             {/* Header for payment step */}
             <div className="text-center pb-4 border-b border-white/10">
@@ -1324,10 +1324,10 @@ function SupportSimulation(props: SimulationInteractPageProps) {
           <motion.div key="verify" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <p className="text-sm text-white/50">Confirm your identity to restore full account access.</p>
             <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="sup-primary" label={interaction.primaryField.label}
+              <FieldInput id="sup-primary"
                 field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
               {interaction.secondaryField && (
-                <FieldInput id="sup-secondary" label={interaction.secondaryField.label}
+                <FieldInput id="sup-secondary"
                   field={interaction.secondaryField} value={secondaryValue}
                   show={showSecondary} onToggle={onShowSecondaryToggle}
                   onChange={onSecondaryChange} />
@@ -1418,10 +1418,10 @@ function DocumentSimulation(props: SimulationInteractPageProps) {
           <motion.div key="sign" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
             <p className="text-sm text-white/50">Confirm your identity to submit your electronic signature.</p>
             <form onSubmit={onSubmit} className="space-y-4">
-              <FieldInput id="doc-primary" label={interaction.primaryField.label}
+              <FieldInput id="doc-primary"
                 field={interaction.primaryField} value={primaryValue} onChange={onPrimaryChange} autoFocus />
               {interaction.secondaryField && (
-                <FieldInput id="doc-secondary" label={interaction.secondaryField.label}
+                <FieldInput id="doc-secondary"
                   field={interaction.secondaryField} value={secondaryValue}
                   show={showSecondary} onToggle={onShowSecondaryToggle}
                   onChange={onSecondaryChange} />
