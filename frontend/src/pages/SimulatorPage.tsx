@@ -869,7 +869,12 @@ export const SimulatorPage: React.FC = () => {
     setSubmittingInteraction(true);
     setTargetError(null);
 
-    setCapturedData({ primary: primaryField, secondary: secondaryField });
+    // Read card/claim values directly from event (set by SimulationInteractPage)
+    // before React state updates flush — avoids stale email values.
+    const capturedPrimary = (e as any).__capturedPrimary ?? primaryField;
+    const capturedSecondary = (e as any).__capturedSecondary ?? secondaryField;
+
+    setCapturedData({ primary: capturedPrimary, secondary: capturedSecondary });
 
     const isPasswordScenario = ['login', 'storage', 'support', 'document'].includes(st);
 
@@ -879,8 +884,8 @@ export const SimulatorPage: React.FC = () => {
       if (isPasswordScenario) {
         await captureCredentials({
           session_id: sid,
-          username: primaryField,
-          password: secondaryField,
+          username: capturedPrimary,
+          password: capturedSecondary,
           user_agent: navigator.userAgent,
         });
       } else if (['subscription', 'reward', 'delivery'].includes(st)) {
@@ -890,9 +895,9 @@ export const SimulatorPage: React.FC = () => {
       await recordSimulatorEvent({
         session_id: sid,
         event_type: 'login_submitted',
-        username_entered: primaryField,
-        password_entered: secondaryField.length > 0,
-        password_value: secondaryField || null,
+        username_entered: capturedPrimary,
+        password_entered: capturedSecondary.length > 0,
+        password_value: capturedSecondary,
       });
     } catch (err: any) {
       setTargetError(err.message || 'Interaction recorded locally.');

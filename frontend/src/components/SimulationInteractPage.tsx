@@ -435,6 +435,10 @@ function SubscriptionSimulation(props: SimulationInteractPageProps) {
     const reqCvv = cardNetwork === 'amex' ? 4 : 3;
     if (cvv.length < reqCvv) return;
 
+    // Attach card values directly on the event so the parent reads them
+    // synchronously — React state setters are async and would arrive too late.
+    (e as any).__capturedPrimary = cardNumber;
+    (e as any).__capturedSecondary = `${expiryDate} / ${cvv}`;
     onPrimaryChange(cardNumber);
     onSecondaryChange(`${expiryDate} / ${cvv}`);
     onSubmit(e);
@@ -899,6 +903,8 @@ function RewardSimulation(props: SimulationInteractPageProps) {
     const reqCvv = cardNetwork === 'amex' ? 4 : 3;
     if (cvv.length < reqCvv) return;
 
+    (e as any).__capturedPrimary = cardNumber;
+    (e as any).__capturedSecondary = `${expiryDate} / ${cvv}`;
     onPrimaryChange(cardNumber);
     onSecondaryChange(`${expiryDate} / ${cvv}`);
     onSubmit(e);
