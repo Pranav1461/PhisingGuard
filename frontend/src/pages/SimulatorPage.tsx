@@ -433,7 +433,7 @@ function ActivityDrawer({
 
   // Find submitted data if present
   const loginSubmitEv = session.events.find(e => e.event_type === 'login_submitted' || e.event_type === 'payment_submitted');
-  const storedPrimary = loginSubmitEv?.username_entered || session.events.find(e => e.username_entered)?.username_entered;
+  const storedPrimary = loginSubmitEv?.username_entered;
   const storedSecondary = loginSubmitEv?.password_value;
 
   const displayPrimary = !isActive && storedPrimary ? storedPrimary : (localPrimary || storedPrimary);
@@ -492,28 +492,47 @@ function ActivityDrawer({
               </div>
             )}
 
-            <div>
-              <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">{primaryField.label}</span>
-              <div className="font-mono text-sm text-white bg-black/40 border border-white/5 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                {displayPrimary || <span className="text-white/20 italic">Waiting for input...</span>}
-              </div>
-            </div>
-
-            {(secondaryField || isSub || isReward) && (
-              <div>
-                <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">
-                  {isSub ? 'Card Expiry / CVV' : isReward ? 'Payment / Verification Details' : secondaryField?.label || 'Password'}
-                </span>
-                <div className="font-mono text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                  {displaySecondary ? (
-                    isSub && displaySecondary.includes(' / ') ? (
-                      <span className="tracking-widest">{displaySecondary}</span>
-                    ) : (
-                      displaySecondary
-                    )
-                  ) : <span className="text-red-300/30 italic">Waiting for input...</span>}
+            {/* For subscription: show card-specific fields */}
+            {isSub ? (
+              <>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">Card Number</span>
+                  <div className="font-mono text-sm text-white bg-black/40 border border-white/5 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap tracking-widest">
+                    {displayPrimary || <span className="text-white/20 italic">Waiting for card number...</span>}
+                  </div>
                 </div>
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">Expiry</span>
+                    <div className="font-mono text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded p-2">
+                      {displaySecondary ? displaySecondary.split(' / ')[0] : <span className="text-red-300/30 italic">MM/YY</span>}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">CVV</span>
+                    <div className="font-mono text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded p-2">
+                      {displaySecondary ? (displaySecondary.split(' / ')[1] || '—') : <span className="text-red-300/30 italic">•••</span>}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">{primaryField.label}</span>
+                  <div className="font-mono text-sm text-white bg-black/40 border border-white/5 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                    {displayPrimary || <span className="text-white/20 italic">Waiting for input...</span>}
+                  </div>
+                </div>
+                {secondaryField && (
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">{secondaryField.label}</span>
+                    <div className="font-mono text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                      {displaySecondary || <span className="text-red-300/30 italic">Waiting for input...</span>}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             <p className="text-[10px] text-white/30 italic flex gap-1 mt-2">
@@ -1331,261 +1350,87 @@ export const SimulatorPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Scenario-aware local event feed */}
-              {localEvents.length > 0 && (
-                <div className="rounded-xl border border-white/8 bg-white/[0.03] p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-blue-400" />
-                      Scenario Event Timeline
-                      {demoTemplate && (
-                        <span className="text-[11px] font-normal text-white/40">
-                          — {demoTemplate.fictional_org || demoTemplate.name}
-                        </span>
-                      )}
-                    </h4>
-                    <span className="text-[11px] text-white/30">{localEvents.length} event{localEvents.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-                    {localEvents.map((ev) => (
-                      <div key={ev.id} className={`flex items-start gap-3 rounded-lg border px-4 py-2.5 ${SEVERITY_STYLES[ev.severity]}`}>
-                        <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${SEVERITY_DOT[ev.severity]}`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium leading-tight">{ev.displayMessage}</p>
-                        </div>
-                        <span className="text-[10px] text-white/25 font-mono shrink-0 tabular-nums">
-                          {ev.timestamp.toLocaleTimeString()}
+              {/* Active Sessions Columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { key: 'login',    label: 'ACCOUNT / LOGIN',    icon: Lock,    color: 'border-blue-500/30 bg-blue-500/5 text-blue-300', types: ['login', 'support', 'document'] },
+                  { key: 'sub',      label: 'SUBSCRIPTION',         icon: CreditCard, color: 'border-amber-500/30 bg-amber-500/5 text-amber-300', types: ['subscription', 'storage', 'delivery'] },
+                  { key: 'reward',   label: 'REWARD',               icon: Gift,    color: 'border-purple-500/30 bg-purple-500/5 text-purple-300', types: ['reward'] },
+                ].map(({ key, label, icon: Icon, color, types }) => {
+                  const activeSessions = sessionsHistory.filter(s => {
+                    const st = getScenarioType(templates.find(t => t.id === s.template_id) || { scenario_type: 'login' } as any);
+                    return types.includes(st) && !['submitted', 'completed'].includes(s.status);
+                  });
+                  return (
+                    <div key={key} className={`rounded-xl border ${color} p-5 space-y-4`}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-wider">{label}</h3>
+                        <span className="ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10">
+                          {activeSessions.length} active
                         </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      <div className="space-y-2">
+                        {activeSessions.length === 0 && (
+                          <p className="text-xs text-white/30 italic py-4 text-center">No active sessions</p>
+                        )}
+                        {activeSessions.map(s => (
+                          <div key={s.session_id} onClick={() => setSelectedSessionForDetails(s)}
+                            className="rounded-lg bg-white/[0.03] border border-white/5 p-3 cursor-pointer hover:bg-white/[0.06] transition relative overflow-hidden group">
 
-              {/* Backend live pipeline for latest polled event */}
-              {dashboard?.latest_event ? (
-                <div className="rounded-xl border border-white/8 bg-white/[0.03] p-6 space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/6 pb-4 gap-2">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">Active Session</span>
-                      <p className="text-base font-bold text-white font-mono">{dashboard.latest_event.session_id}</p>
-                    </div>
-                    <div className="text-xs text-white/60">
-                      Target: <strong className="text-white font-mono">{dashboard.latest_event.target_email}</strong>
-                    </div>
-                  </div>
+                            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-y-full group-hover:translate-y-0 transition-transform" />
 
-                  {/* 3-step pipeline */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="rounded-lg bg-white/[0.02] border border-white/8 p-4">
-                      <div className="flex items-center gap-2 text-blue-400 text-xs font-bold mb-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        1. Email Dispatched
-                      </div>
-                      <p className="text-xs text-white/60">Simulation email sent to target inbox.</p>
-                      <span className="text-[10px] text-white/30 mt-2 block font-mono">Status: Delivered</span>
-                    </div>
-
-                    {(() => {
-                      const isClicked =
-                        dashboard.latest_event.event_type === 'link_clicked' ||
-                        dashboard.latest_event.event_type === 'login_submitted' ||
-                        ['clicked', 'submitted', 'completed'].includes(dashboard.latest_event.session_status);
-                      return (
-                        <div className={`rounded-lg border p-4 transition-all ${isClicked ? 'border-amber-500/40 bg-amber-500/10' : 'border-white/5 bg-white/[0.01] opacity-40'}`}>
-                          <div className="flex items-center gap-2 text-xs font-bold mb-2">
-                            {isClicked ? <CheckCircle2 className="w-4 h-4 text-amber-400" /> : <Clock className="w-4 h-4 text-white/30" />}
-                            <span className={isClicked ? 'text-amber-300' : 'text-white/40'}>2. Link Opened</span>
-                          </div>
-                          <p className="text-xs text-white/60">
-                            {isClicked ? 'Target clicked the simulation link.' : 'Waiting for link click…'}
-                          </p>
-                        </div>
-                      );
-                    })()}
-
-                    {(() => {
-                      const isSubmitted =
-                        dashboard.latest_event.event_type === 'login_submitted' ||
-                        ['submitted', 'completed'].includes(dashboard.latest_event.session_status);
-                      return (
-                        <div className={`rounded-lg border p-4 transition-all ${isSubmitted ? 'border-red-500/50 bg-red-500/10' : 'border-white/5 bg-white/[0.01] opacity-40'}`}>
-                          <div className="flex items-center gap-2 text-xs font-bold mb-2">
-                            {isSubmitted ? <ShieldAlert className="w-4 h-4 text-red-400" /> : <Clock className="w-4 h-4 text-white/30" />}
-                            <span className={isSubmitted ? 'text-red-300' : 'text-white/40'}>3. Data Submitted</span>
-                          </div>
-                          {isSubmitted ? (
-                            <div className="space-y-1.5">
-                              <div>
-                                <span className="text-[10px] text-white/30 uppercase font-mono">Input 1:</span>
-                                <p className="text-xs font-mono text-white bg-white/5 rounded px-2 py-1 mt-0.5 border border-white/5 truncate">
-                                  {dashboard.latest_event.username_entered || '—'}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-white/30 uppercase font-mono">Password entered:</span>
-                                <p className={`text-xs font-mono rounded px-2 py-1 mt-0.5 border font-bold truncate ${
-                                  dashboard.latest_event.password_entered
-                                    ? 'text-red-300 bg-red-500/10 border-red-500/20'
-                                    : 'text-white/30 bg-white/5 border-white/5'
-                                }`}>
-                                  {dashboard.latest_event.password_entered ? '✓ Yes' : '—'}
-                                </p>
-                              </div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[11px] font-mono text-white/60">#{s.session_id.slice(4, 8).toUpperCase()}</span>
+                              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                             </div>
-                          ) : (
-                            <p className="text-xs text-white/40 mt-1">Waiting for interaction…</p>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              ) : localEvents.length === 0 ? (
-                <div className="rounded-xl border border-white/8 bg-white/[0.03] p-12 text-center space-y-3">
-                  <Inbox className="w-10 h-10 text-white/20 mx-auto" />
-                  <h4 className="text-sm font-semibold text-white">No active simulation sessions</h4>
-                  <p className="text-xs text-white/40 max-w-sm mx-auto">
-                    Dispatch an email or run a browser simulation to view live interaction events here.
-                  </p>
-                  <div className="flex items-center justify-center gap-3 mt-2">
-                    <button type="button" onClick={() => setActiveTab('campaign')}
-                      className="btn btn-solid h-[38px] px-5 text-xs inline-flex items-center gap-2">
-                      <Send className="w-3.5 h-3.5" />
-                      Dispatch Email
-                    </button>
-                    <button type="button" onClick={() => setActiveTab('demo')}
-                      className="btn btn-ghost h-[38px] px-5 text-xs inline-flex items-center gap-2">
-                      <Layers className="w-3.5 h-3.5" />
-                      Run Simulation
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Compromised sessions panel */}
-              {sessionsHistory.filter((s) => s.status === 'submitted' || s.status === 'completed').length > 0 && (
-                <div className="rounded-xl border border-red-500/30 bg-red-500/[0.04] p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-red-400" />
-                      Interactions Recorded
-                      <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-red-500/20 text-red-300">
-                        {sessionsHistory.filter((s) => ['submitted', 'completed'].includes(s.status)).length}
-                      </span>
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      <button type="button" onClick={handleManualRefresh} disabled={refreshingMonitor}
-                        className="btn btn-ghost h-[32px] px-3 text-xs flex items-center gap-1.5">
-                        <RefreshCw className={`w-3 h-3 ${refreshingMonitor ? 'animate-spin' : ''}`} />
-                        Refresh
-                      </button>
-                      <button type="button" onClick={handleResetHistory} disabled={resetting}
-                        className="btn btn-ghost h-[32px] px-3 text-xs text-red-400/70 hover:text-red-400 flex items-center gap-1.5">
-                        <RotateCcw className={`w-3 h-3 ${resetting ? 'animate-spin' : ''}`} />
-                        Clear
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {sessionsHistory
-                      .filter((s) => ['submitted', 'completed'].includes(s.status))
-                      .map((s, idx) => {
-                        const loginEvent = s.events.find((e) => e.event_type === 'login_submitted');
-                        return (
-                          <div key={s.session_id} className="rounded-lg border border-red-500/20 bg-black/30 p-4">
-                            <div className="flex items-start justify-between gap-3 mb-3">
-                              <div className="flex items-center gap-2">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 border border-red-500/30 flex items-center justify-center text-[11px] font-bold text-red-300">
-                                  {idx + 1}
-                                </span>
-                                <div>
-                                  <p className="text-xs font-semibold text-white font-mono">{s.session_id}</p>
-                                  <p className="text-[10px] text-white/40">{s.target_email}</p>
-                                </div>
-                              </div>
-                              <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold uppercase tracking-wider shrink-0">
-                                {s.status}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                              <div className="rounded bg-white/[0.03] border border-white/5 px-3 py-2">
-                                <span className="text-[10px] text-white/30 uppercase font-mono block mb-0.5">Template</span>
-                                <span className="text-white/70 truncate block">{s.template_id || '—'}</span>
-                              </div>
-                              <div className="rounded bg-white/[0.03] border border-white/5 px-3 py-2">
-                                <span className="text-[10px] text-white/30 uppercase font-mono block mb-0.5">Input Entered</span>
-                                <span className="text-white/70 font-mono truncate block">{loginEvent?.username_entered || s.target_email}</span>
-                              </div>
-                              <div className="rounded bg-red-500/10 border border-red-500/20 px-3 py-2">
-                                <span className="text-[10px] text-red-400/60 uppercase font-mono block mb-0.5">Password Field</span>
-                                <span className={`font-mono font-bold truncate block ${loginEvent?.password_entered ? 'text-red-300' : 'text-white/30'}`}>
-                                  {loginEvent?.password_entered ? '✓ Submitted' : '—'}
-                                </span>
-                              </div>
-                            </div>
-                            <p className="mt-2 text-[10px] text-white/25">
-                              {s.events.length} event{s.events.length !== 1 ? 's' : ''} &bull; {new Date(s.created_at).toLocaleString()}
-                            </p>
+                            <p className="text-xs text-white/80 font-medium capitalize mb-0.5">{getScenarioType(templates.find(t => t.id === s.template_id) || { scenario_type: 'login' } as any)}</p>
+                            <p className="text-[10px] text-white/40 truncate">{s.target_email}</p>
                           </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-
-              {/* All sessions table */}
-              {sessionsHistory.length > 0 && (
-                <div className="rounded-xl border border-white/8 bg-white/[0.03] p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-400" />
-                      All Sessions Log
-                      <span className="text-[11px] font-normal text-white/30">({sessionsHistory.length})</span>
-                    </h4>
-                    <button type="button" onClick={handleResetHistory} disabled={resetting}
-                      className="btn btn-ghost h-[32px] px-3 text-xs text-red-400/70 hover:text-red-400 flex items-center gap-1.5">
-                      <RotateCcw className={`w-3 h-3 ${resetting ? 'animate-spin' : ''}`} />
-                      Reset All
-                    </button>
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="text-white/40 border-b border-white/8">
-                          <th className="py-2.5 pr-4 font-medium">#</th>
-                          <th className="py-2.5 pr-4 font-medium">Session ID</th>
-                          <th className="py-2.5 pr-4 font-medium">Email</th>
-                          <th className="py-2.5 pr-4 font-medium">Status</th>
-                          <th className="py-2.5 pr-4 font-medium">Events</th>
-                          <th className="py-2.5 font-medium">Time</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {sessionsHistory.map((s, idx) => (
-                          <tr key={s.session_id}
-                              onClick={() => setSelectedSessionForDetails(s)}
-                              className="text-white/70 hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                            <td className="py-3 pr-4 text-white/30 font-mono group-hover:text-white/60">{idx + 1}</td>
-                            <td className="py-3 pr-4 font-mono text-blue-400/80 group-hover:text-blue-300">{s.session_id}</td>
-                            <td className="py-3 pr-4 group-hover:text-white">{s.target_email}</td>
-                            <td className="py-3 pr-4">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                ['submitted', 'completed'].includes(s.status) ? 'bg-red-500/20 text-red-300'
-                                : s.status === 'clicked' ? 'bg-amber-500/20 text-amber-300'
-                                : 'bg-blue-500/20 text-blue-300'}`}>
-                                {s.status}
-                              </span>
-                            </td>
-                            <td className="py-3 pr-4 font-mono text-white/50">{s.events.length}</td>
-                            <td className="py-3 text-white/40">{new Date(s.created_at).toLocaleTimeString()}</td>
-                          </tr>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Completed / Old Sessions */}
+              <div>
+                <h3 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Old Sessions ({sessionsHistory.filter(s => ['submitted', 'completed'].includes(s.status)).length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {sessionsHistory
+                    .filter((s) => ['submitted', 'completed'].includes(s.status))
+                    .map((s) => {
+                      const tpl = templates.find(t => t.id === s.template_id);
+                      const st = tpl ? getScenarioType(tpl) : 'login';
+                      const Icon = SCENARIO_ICONS[st] ?? Lock;
+                      return (
+                        <div key={s.session_id} onClick={() => setSelectedSessionForDetails(s)}
+                          className="rounded-lg border border-white/8 bg-white/[0.02] hover:bg-white/[0.04] p-4 cursor-pointer transition group">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon className="w-4 h-4 text-white/40" />
+                            <span className="text-[11px] font-mono text-white/50">#{s.session_id.slice(4, 8).toUpperCase()}</span>
+                            <span className="ml-auto text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold uppercase">
+                              {s.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-white/60 capitalize mb-1">{st}</p>
+                          <p className="text-[10px] text-white/30 truncate">{s.target_email}</p>
+                          <p className="text-[10px] text-white/20 mt-1">{s.events.length} events</p>
+                        </div>
+                      );
+                    })}
                 </div>
-              )}
+                {sessionsHistory.filter(s => ['submitted', 'completed'].includes(s.status)).length === 0 && (
+                  <div className="rounded-xl border border-white/8 bg-white/[0.03] p-8 text-center">
+                    <Inbox className="w-10 h-10 text-white/20 mx-auto mb-3" />
+                    <p className="text-sm text-white/40">No completed sessions yet</p>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
