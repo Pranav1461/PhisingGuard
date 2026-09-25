@@ -64,6 +64,7 @@ class SimulatorEventItem(BaseModel):
     event_type: str
     username_entered: Optional[str] = None
     password_entered: bool = False
+    password_value: Optional[str] = None
     timestamp: str
 
 class SimulatorSessionDetailResponse(BaseModel):

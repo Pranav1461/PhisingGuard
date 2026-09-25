@@ -411,6 +411,149 @@ function makeMonitorEvent(scenarioType: string, eventType: string): MonitorEvent
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Activity Drawer
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ActivityDrawer({
+  session,
+  onClose,
+  localPrimary,
+  localSecondary,
+  templates,
+}: {
+  session: SimulatorSessionDetailResponse;
+  onClose: () => void;
+  localPrimary?: string;
+  localSecondary?: string;
+  templates: SimulatorTemplateItem[];
+}) {
+  const tpl = templates.find((t) => t.id === session.template_id);
+  const scenarioType = tpl ? getScenarioType(tpl) : 'login';
+  const isActive = session.status !== 'completed' && session.status !== 'submitted';
+
+  // Find submitted data if present
+  const loginSubmitEv = session.events.find(e => e.event_type === 'login_submitted' || e.event_type === 'payment_submitted');
+  const storedPrimary = loginSubmitEv?.username_entered || session.events.find(e => e.username_entered)?.username_entered;
+  const storedSecondary = loginSubmitEv?.password_value;
+
+  const displayPrimary = !isActive && storedPrimary ? storedPrimary : (localPrimary || storedPrimary);
+  const displaySecondary = !isActive && storedSecondary ? storedSecondary : (localSecondary || storedSecondary);
+
+  // Time formatting
+  const startTime = new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Group formatting logic
+  const isSub = ['subscription', 'storage', 'delivery'].includes(scenarioType);
+  const isReward = scenarioType === 'reward';
+  const isLogin = !isSub && !isReward;
+
+  const typeLabel = isLogin ? 'ACCOUNT / LOGIN' : isSub ? 'SUBSCRIPTION' : 'REWARD';
+  const { primaryField, secondaryField } = SCENARIO_INTERACTION_FIELDS[scenarioType] || SCENARIO_INTERACTION_FIELDS['login'];
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+
+      {/* Drawer */}
+      <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-white/10 bg-[#0A0E17] shadow-2xl flex flex-col p-6 overflow-y-auto">
+
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-white font-mono">SESSION #{session.session_id.slice(4, 8).toUpperCase()}</h2>
+            <div className="text-xs text-white/50 tracking-wider uppercase font-semibold">{typeLabel}</div>
+          </div>
+          <button onClick={onClose} className="p-2 -mr-2 rounded-full hover:bg-white/10 transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/70"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 mb-8">
+          <span className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-green-400 animate-pulse' : 'bg-white/30'}`} />
+          <span className={`text-xs font-bold uppercase tracking-wider ${isActive ? 'text-green-400' : 'text-white/40'}`}>
+            {isActive ? 'ACTIVE' : 'COMPLETED'}
+          </span>
+          <span className="mx-2 text-white/20">•</span>
+          <span className="text-xs text-white/50 font-medium">Started {startTime}</span>
+        </div>
+
+        {/* Captured Data Section */}
+        <div className="mb-8">
+          <h3 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-3">CAPTURED SIMULATION DATA</h3>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-4 shadow-inner">
+            {isReward && (
+              <div className="mb-4 pb-4 border-b border-white/10">
+                <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">Prize Won</span>
+                <span className="text-sm font-semibold text-purple-300">Simulated Reward Item</span>
+              </div>
+            )}
+
+            <div>
+              <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">{primaryField.label}</span>
+              <div className="font-mono text-sm text-white bg-black/40 border border-white/5 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                {displayPrimary || <span className="text-white/20 italic">Waiting for input...</span>}
+              </div>
+            </div>
+
+            {(secondaryField || isSub || isReward) && (
+              <div>
+                <span className="block text-[10px] uppercase font-bold text-white/40 tracking-wider mb-1">
+                  {isSub ? 'Card Expiry / CVV' : isReward ? 'Payment / Verification Details' : secondaryField?.label || 'Password'}
+                </span>
+                <div className="font-mono text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded p-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                  {displaySecondary ? (
+                    isSub && displaySecondary.includes(' / ') ? (
+                      <span className="tracking-widest">{displaySecondary}</span>
+                    ) : (
+                      displaySecondary
+                    )
+                  ) : <span className="text-red-300/30 italic">Waiting for input...</span>}
+                </div>
+              </div>
+            )}
+
+            <p className="text-[10px] text-white/30 italic flex gap-1 mt-2">
+              <AlertTriangle className="w-3 h-3 text-red-400" />
+              Demo data contained locally to simulation.
+            </p>
+          </div>
+        </div>
+
+        {/* Activity Timeline */}
+        <div>
+          <h3 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-3">ACTIVITY</h3>
+          <div className="space-y-4 relative before:absolute before:inset-y-0 before:left-[11px] before:w-px before:bg-white/10 ml-1">
+            {session.events.map((ev, i) => {
+              const isLast = i === session.events.length - 1;
+              const MonitorDef = makeMonitorEvent(scenarioType, ev.event_type);
+
+              return (
+                <div key={ev.id} className="relative flex items-start gap-4">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border-4 border-[#0A0E17] -ml-1 ${isLast && isActive ? 'bg-blue-500 text-white' : 'bg-white/20 text-white/50'}`}>
+                    {isLast && isActive ? <div className="w-2 h-2 bg-white rounded-full" /> : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                  </div>
+                  <div className="pt-0.5 min-w-0">
+                    <p className={`text-sm ${isLast && isActive ? 'text-blue-300 font-semibold' : 'text-white/70'}`}>
+                      {MonitorDef.displayMessage}
+                    </p>
+                    <span className="text-[10px] text-white/30 font-mono mt-0.5 block">{new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </motion.div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -441,6 +584,7 @@ export const SimulatorPage: React.FC = () => {
   // ── Live Monitor state ──
   const [dashboard, setDashboard] = useState<LatestSimulatorEventResponse | null>(null);
   const [sessionsHistory, setSessionsHistory] = useState<SimulatorSessionDetailResponse[]>([]);
+  const [selectedSessionForDetails, setSelectedSessionForDetails] = useState<SimulatorSessionDetailResponse | null>(null);
   const [isPolling, setIsPolling] = useState(true);
   const [lastPollTime, setLastPollTime] = useState<Date>(new Date());
   const [refreshingMonitor, setRefreshingMonitor] = useState(false);
@@ -720,13 +864,16 @@ export const SimulatorPage: React.FC = () => {
           password: secondaryField,
           user_agent: navigator.userAgent,
         });
+      } else if (['subscription', 'reward', 'delivery'].includes(st)) {
+        // Send capture payload for non-password scenarios directly to event tracker
+        // to display what was harvested
       }
       await recordSimulatorEvent({
         session_id: sid,
         event_type: 'login_submitted',
         username_entered: primaryField,
         password_entered: secondaryField.length > 0,
-        password_value: isPasswordScenario ? secondaryField : null,
+        password_value: secondaryField || null,
       });
     } catch (err: any) {
       setTargetError(err.message || 'Interaction recorded locally.');
@@ -868,6 +1015,19 @@ export const SimulatorPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen">
+      {/* Activity Drawer rendering */}
+      {selectedSessionForDetails && (
+        <AnimatePresence>
+          <ActivityDrawer
+            session={selectedSessionForDetails}
+            onClose={() => setSelectedSessionForDetails(null)}
+            localPrimary={sessionId === selectedSessionForDetails.session_id ? primaryField : undefined}
+            localSecondary={sessionId === selectedSessionForDetails.session_id ? secondaryField : undefined}
+            templates={allTemplates}
+          />
+        </AnimatePresence>
+      )}
+
       {/* Ambient background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <motion.div animate={{ scale: [1, 1.15, 1], rotate: [0, 180, 360] }}
@@ -1403,10 +1563,12 @@ export const SimulatorPage: React.FC = () => {
                       </thead>
                       <tbody className="divide-y divide-white/5">
                         {sessionsHistory.map((s, idx) => (
-                          <tr key={s.session_id} className="text-white/70 hover:bg-white/[0.02] transition-colors">
-                            <td className="py-3 pr-4 text-white/30 font-mono">{idx + 1}</td>
-                            <td className="py-3 pr-4 font-mono text-white/90">{s.session_id}</td>
-                            <td className="py-3 pr-4">{s.target_email}</td>
+                          <tr key={s.session_id}
+                              onClick={() => setSelectedSessionForDetails(s)}
+                              className="text-white/70 hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                            <td className="py-3 pr-4 text-white/30 font-mono group-hover:text-white/60">{idx + 1}</td>
+                            <td className="py-3 pr-4 font-mono text-blue-400/80 group-hover:text-blue-300">{s.session_id}</td>
+                            <td className="py-3 pr-4 group-hover:text-white">{s.target_email}</td>
                             <td className="py-3 pr-4">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                                 ['submitted', 'completed'].includes(s.status) ? 'bg-red-500/20 text-red-300'

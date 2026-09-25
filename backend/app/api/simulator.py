@@ -236,6 +236,7 @@ async def list_simulator_sessions(db: Session = Depends(get_db)):
                 event_type=ev.event_type,
                 username_entered=ev.username_entered,
                 password_entered=ev.password_entered,
+                password_value=ev.password_value,
                 timestamp=ev.timestamp.isoformat() if ev.timestamp else datetime.now(timezone.utc).isoformat()
             )
             for ev in s.events
@@ -267,6 +268,7 @@ async def get_simulator_session_detail(session_id: str, db: Session = Depends(ge
             event_type=ev.event_type,
             username_entered=ev.username_entered,
             password_entered=ev.password_entered,
+            password_value=ev.password_value,
             timestamp=ev.timestamp.isoformat() if ev.timestamp else datetime.now(timezone.utc).isoformat()
         )
         for ev in session.events

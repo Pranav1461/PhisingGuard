@@ -114,6 +114,7 @@ export interface SimulatorEventItem {
   event_type: string;
   username_entered?: string | null;
   password_entered: boolean;
+  password_value?: string | null;
   timestamp: string;
 }
 
