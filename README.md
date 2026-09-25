@@ -124,7 +124,8 @@ npm run dev
 ## 🎓 Features
 
 ### 1. URL Intelligence Check
-- Multi-provider threat intelligence lookup
+- Multi-provider threat intelligence lookup (VirusTotal, URLhaus, URLScan.io)
+- **Website existence verification** — returns "Website Does Not Exist" error for unreachable or non-existent domains before analysis
 - ML-based phishing detection
 - Explainable risk scoring
 - Visual risk breakdown
@@ -132,14 +133,16 @@ npm run dev
 ### 2. Fraud Simulation Engine
 - **Interactive phishing scenarios:**
   - Account/Login fraud with futuristic dark UI
-  - Subscription/Billing checkout with strict card (Luhn) validation algorithms
-  - Reward/Prize scams utilizing interactive "Spin the Wheel" mechanics with guaranteed prize logic and "transaction fee" traps
+  - Subscription/Billing checkout with strict card validation (Luhn algorithm + card network detection: Visa, Mastercard, Amex, Discover, RuPay)
+  - Reward/Prize scams with interactive SVG Spin the Wheel mechanic, guaranteed prize logic, and "transaction fee" payment trap
 
-- **Live monitoring dashboard:**
-  - Real-time event tracking
-  - Interaction pipeline visualization
-  - Captured credential display
-  - Session history logs
+- **Activity Page (Live Monitor):**
+  - Real-time three-column session view (Account/Login, Subscription, Reward)
+  - Clickable session drawer showing full captured payload
+  - For login scenarios: actual username and password captured
+  - For subscription/reward scenarios: actual card number, expiry date, and CVV captured
+  - Active vs completed session separation
+  - Polling every 2.5s for live updates
 
 - **Educational debrief:**
   - Attack breakdown
@@ -147,11 +150,14 @@ npm run dev
   - Manipulation techniques
   - Safe action guidance
 
-### 3. Pattern Recognition Training
-- Common phishing URL patterns
-- Domain spoofing techniques
-- Suspicious character usage
-- Social engineering indicators
+### 3. Activity Page (formerly Live Monitor)
+- Three-column active sessions view: Account/Login, Subscription, Reward
+- Clickable session drawer with full captured simulation data
+- Accurately shows actual card number, expiry, CVV for payment scenarios
+- Correctly shows username + password for login scenarios
+- Active vs completed session separation
+- Polled every 2.5s for live updates
+- Completed sessions archived as "Old Sessions"
 
 ### 4. Security Awareness Education
 - How phishing works
