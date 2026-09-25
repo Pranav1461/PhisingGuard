@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
-from backend.app.core.security import normalize_url, validate_ssrf_safety
+from backend.app.core.security import normalize_url, validate_ssrf_safety, check_website_exists
 from backend.app.schemas.analyze import AnalyzeURLRequest, AnalyzeURLResponse, ProviderStatus, EvidenceItem
 from backend.app.services.threat_intel.orchestrator import ThreatIntelligenceService
 from backend.app.services.ml.predictor import predictor_service
@@ -33,10 +33,18 @@ async def analyze_url(req: AnalyzeURLRequest, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
+    # 3. Check if website exists (HEAD/GET request)
+    website_exists = await check_website_exists(normalized_url)
+    if not website_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Website does not exist or is unreachable."
+        )
+
     parsed = urlparse(normalized_url)
     domain = parsed.hostname or ""
 
-    # 3. Query Threat Intelligence Providers (Concurrent, Fail-Open)
+    # 4. Query Threat Intelligence Providers (Concurrent, Fail-Open)
     providers_result = await threat_intel_service.query_all(normalized_url, domain)
 
     # 4. Run ML Model Prediction

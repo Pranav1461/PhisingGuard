@@ -18,6 +18,9 @@ export async function analyzeURL(url: string): Promise<AnalyzeURLResponse> {
     });
     return response.data;
   } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Website does not exist or is unreachable.');
+    }
     if (error.response?.data?.detail) {
       throw new Error(error.response.data.detail);
     }

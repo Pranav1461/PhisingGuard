@@ -1,5 +1,6 @@
 import socket
 import ipaddress
+import httpx
 from urllib.parse import urlparse, urlunparse
 
 BLOCKED_IP_NETWORKS = [
@@ -19,6 +20,26 @@ BLOCKED_IP_NETWORKS = [
 BLOCKED_HOSTNAMES = {
     "localhost", "loopback", "internal", "local", "invalid", "test"
 }
+
+async def check_website_exists(url: str, timeout: float = 5.0) -> bool:
+    """
+    Check if a website exists by making a quick HTTP request.
+    Returns True if the website responds (any status code), False if it doesn't exist or is unreachable.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+            # Try HEAD first (lighter), fallback to GET if not allowed
+            response = await client.head(url)
+            if response.status_code == 405:  # HEAD not allowed
+                response = await client.get(url)
+            # Any response (even 4xx/5xx) means the website exists
+            return True
+    except (httpx.ConnectError, httpx.TimeoutException, httpx.RequestError):
+        # Connection failed, timeout, or other request error - website doesn't exist or is unreachable
+        return False
+    except Exception:
+        return False
+
 
 def normalize_url(raw_url: str) -> str:
     """Normalize input URL for safe analysis."""
